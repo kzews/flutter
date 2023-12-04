@@ -3,14 +3,9 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttersrc/appBar.dart';
-import 'package:fluttersrc/screens/registration.dart';
-import 'package:fluttersrc/screens/table.dart';
-import 'package:fluttersrc/screens/test_page.dart';
 import 'package:http/http.dart' as http;
-import 'package:page_transition/page_transition.dart';
 
 import '../objects/userDto.dart';
-import 'add_license.dart';
 
 class VerticalTextCell extends StatelessWidget {
   final String text;
@@ -159,6 +154,18 @@ class _UsersPageState extends State<UsersPage> {
       // Пользователь успешно обновлен
       // Обработайте успешный ответ по вашему усмотрению
     } else {
+      print(response.statusCode);
+      if (response.statusCode == 400){
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            backgroundColor: Colors.red,
+            content:
+            Text('Данный Логин уже занят! Используйте другой логин!'),
+            duration: Duration(seconds: 2), // Длительность отображения Snackbar
+          ),
+        );
+        print("invalid login");
+      }
       // Обработка ошибок при обновлении пользователя
       // Показать сообщение об ошибке или выполнить другие действия
     }
@@ -225,7 +232,7 @@ class _UsersPageState extends State<UsersPage> {
   }
 
   void _filterItems() {
-    fetchItems(widget.userDto);
+    // fetchItems(widget.userDto);
     final loginFilter = loginController.text.toLowerCase();
     final passwordTypeFilter = passwordFilterController.text.toLowerCase();
     final roleFilter = roleFilterController.text.toLowerCase();

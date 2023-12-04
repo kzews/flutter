@@ -22,7 +22,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>();
   final TextEditingController _loginController = TextEditingController();
   final TextEditingController _passwordTypeController = TextEditingController();
-  final TextEditingController _roleController = TextEditingController();
+  //final TextEditingController _roleController = TextEditingController();
 
   List<Map<String, dynamic>> items = [];
 
@@ -44,7 +44,19 @@ class _RegisterPageState extends State<RegisterPage> {
         // Обновите список после добавления элемента
         _formKey.currentState!.reset();
       } else {
-        throw Exception('Failed to add item');
+        if (response.statusCode == 400) {
+          print(response.statusCode);
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              backgroundColor: Colors.red,
+              content:
+              Text('Логин уже занят! Используйте другой логин'),
+              duration: Duration(
+                  seconds: 2), // Длительность отображения Snackbar
+            ),
+          );
+          throw Exception('Failed to add item');
+        }
       }
     }
   }
