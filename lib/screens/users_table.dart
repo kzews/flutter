@@ -10,7 +10,7 @@ import '../objects/userDto.dart';
 class VerticalTextCell extends StatelessWidget {
   final String text;
 
-  VerticalTextCell(this.text, {super.key});
+  const VerticalTextCell(this.text, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +24,7 @@ class VerticalTextCell extends StatelessWidget {
 class UsersPage extends StatefulWidget {
   final UserDto userDto;
 
-  UsersPage({required this.userDto, Key? key}) : super(key: key);
+  const UsersPage({required this.userDto, Key? key}) : super(key: key);
 
   @override
   _UsersPageState createState() => _UsersPageState();
@@ -155,12 +155,11 @@ class _UsersPageState extends State<UsersPage> {
       // Обработайте успешный ответ по вашему усмотрению
     } else {
       print(response.statusCode);
-      if (response.statusCode == 400){
+      if (response.statusCode == 400) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             backgroundColor: Colors.red,
-            content:
-            Text('Данный Логин уже занят! Используйте другой логин!'),
+            content: Text('Данный Логин уже занят! Используйте другой логин!'),
             duration: Duration(seconds: 2), // Длительность отображения Snackbar
           ),
         );
@@ -248,7 +247,7 @@ class _UsersPageState extends State<UsersPage> {
       }).toList();
     });
   }
-//TODO функционал на фильтры
+
   Future<void> _showEditDialog(Map<String, dynamic> item) async {
     TextEditingController loginController =
         TextEditingController(text: item['login']);
@@ -261,20 +260,20 @@ class _UsersPageState extends State<UsersPage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Изменить данные'),
+          title: const Text('Изменить данные'),
           content: Column(
             children: [
               TextField(
                 controller: loginController,
-                decoration: InputDecoration(labelText: 'Логин'),
+                decoration: const InputDecoration(labelText: 'Логин'),
               ),
               TextField(
                 controller: passwordController,
-                decoration: InputDecoration(labelText: 'Пароль'),
+                decoration: const InputDecoration(labelText: 'Пароль'),
               ),
               TextField(
                 controller: roleController,
-                decoration: InputDecoration(labelText: 'Роль'),
+                decoration: const InputDecoration(labelText: 'Роль'),
               ),
             ],
           ),
@@ -283,7 +282,7 @@ class _UsersPageState extends State<UsersPage> {
               onPressed: () {
                 Navigator.of(context).pop(); // Закрыть диалоговое окно
               },
-              child: Text('Отмена'),
+              child: const Text('Отмена'),
             ),
             TextButton(
               onPressed: () {
@@ -293,7 +292,7 @@ class _UsersPageState extends State<UsersPage> {
                 Navigator.of(context)
                     .pop(); // Закрыть диалоговое окно после сохранения
               },
-              child: Text('Сохранить и обновить'),
+              child: const Text('Сохранить и обновить'),
             ),
           ],
         );
@@ -304,6 +303,8 @@ class _UsersPageState extends State<UsersPage> {
   @override
   Widget build(BuildContext context) {
     final Object? userDto = ModalRoute.of(context)!.settings.arguments;
+    // double bottomPadding =
+    //     MediaQuery.of(context).size.height * 0.05; // 5% высоты экрана
     return Scaffold(
       appBar: CustomAppBar(userDto: widget.userDto),
       drawer: AppDrawer(userDto: widget.userDto),
@@ -348,7 +349,7 @@ class _UsersPageState extends State<UsersPage> {
               scrollDirection: Axis.vertical,
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
-                child: Container(
+                child: SizedBox(
                   width: MediaQuery.of(context).size.width,
                   child: DataTable(
                     border: TableBorder.all(
@@ -511,9 +512,28 @@ class _UsersPageState extends State<UsersPage> {
                 ),
               ),
             ),
+            // Positioned(
+            //   bottom: bottomPadding,
+            //   right: bottomPadding,
+            //   child: FloatingActionButton(
+            //     onPressed: () {
+            //       // Обработка нажатия кнопки добавления пользователя
+            //       // Например, откройте новый экран для добавления пользователя
+            //       Navigator.push(
+            //         context,
+            //         MaterialPageRoute(
+            //           builder: (context) => RegisterPage(userDto: widget.userDto),
+            //         ),
+            //       );
+            //     },
+            //     child: Icon(Icons.person_add_alt_rounded),
+            //   ),
+            // ),
           ],
         ),
       ),
+
+      ///////////////
     );
   }
 }

@@ -18,7 +18,7 @@ class MyApp extends StatelessWidget {
       title: 'Flutter Database App',
       theme: ThemeData(
         primarySwatch: Colors.blue,
-        inputDecorationTheme: InputDecorationTheme(
+        inputDecorationTheme: const InputDecorationTheme(
           focusedBorder: UnderlineInputBorder(
             borderSide: BorderSide(color: Colors.black),
           ),
@@ -35,13 +35,13 @@ class MyApp extends StatelessWidget {
           ),
         ),
 
-        appBarTheme: AppBarTheme(
+        appBarTheme: const AppBarTheme(
           backgroundColor: Colors.black, // Зеленый цвет для AppBar
         ),
         scaffoldBackgroundColor:
             Colors.green.withOpacity(0.87), // Прозрачно-зеленый фон
       ),
-      home: LoginPage(),
+      home: const LoginPage(),
       // Добавьте здесь другие страницы и их роутинг, если необходимо
     );
   }

@@ -15,13 +15,15 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: LoginPage(),
+      home: const LoginPage(),
     );
   }
 }
 
 //TODO сделать конпку "назад" не выходом из приложения
 class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+
   @override
   _LoginPageState createState() => _LoginPageState();
 }
@@ -35,7 +37,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Theme(
       data: ThemeData(
-        inputDecorationTheme: InputDecorationTheme(
+        inputDecorationTheme: const InputDecorationTheme(
           focusedBorder: UnderlineInputBorder(
             borderSide: BorderSide(
               color: Colors.black,
@@ -48,7 +50,7 @@ class _LoginPageState extends State<LoginPage> {
       ),
       child: Scaffold(
         appBar: AppBar(
-          title: Text('Вход'),
+          title: const Text('Вход'),
           backgroundColor: Colors.black,
         ),
         body: Padding(
@@ -58,7 +60,7 @@ class _LoginPageState extends State<LoginPage> {
             children: [
               TextField(
                 controller: _loginController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Логин',
                 ),
               ),
@@ -82,13 +84,13 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               ClipOval(
                 child: Material(
                   color: Colors.green,
                   child: InkWell(
                     splashColor: Colors.greenAccent,
-                    child: SizedBox(
+                    child: const SizedBox(
                         width: 56,
                         height: 56,
                         child: Icon(Icons.arrow_forward, color: Colors.white)),
@@ -105,7 +107,7 @@ class _LoginPageState extends State<LoginPage> {
                           Navigator.of(context).pushReplacement(PageTransition(
                             type: PageTransitionType.fade,
                             child: Home1Page(userDto: userDto),
-                            duration: Duration(milliseconds: 1000),
+                            duration: const Duration(milliseconds: 1000),
                           ));
                         },
                       );

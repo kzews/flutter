@@ -3,4 +3,4 @@
 // const AUTH_API_URL = 'http://localhost:8080/auth-api';
 const AUTH_API_URL = 'http://178.124.209.20/thyroid-auth';
 const USE_FAKE_THYROID_API = false;
-const USE_FAKE_AUTH_API = true;
+const USE_FAKE_AUTH_API = false;

@@ -9,7 +9,7 @@ import 'package:http/http.dart' as http;
 import '../appBar.dart';
 
 class RegisterPage extends StatefulWidget {
-  RegisterPage({Key? key, required this.userDto}) : super(key: key);
+  const RegisterPage({Key? key, required this.userDto}) : super(key: key);
   final UserDto userDto;
 
   @override
@@ -22,6 +22,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>();
   final TextEditingController _loginController = TextEditingController();
   final TextEditingController _passwordTypeController = TextEditingController();
+
   //final TextEditingController _roleController = TextEditingController();
 
   List<Map<String, dynamic>> items = [];
@@ -49,10 +50,9 @@ class _RegisterPageState extends State<RegisterPage> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               backgroundColor: Colors.red,
-              content:
-              Text('Логин уже занят! Используйте другой логин'),
-              duration: Duration(
-                  seconds: 2), // Длительность отображения Snackbar
+              content: Text('Логин уже занят! Используйте другой логин'),
+              duration:
+                  Duration(seconds: 2), // Длительность отображения Snackbar
             ),
           );
           throw Exception('Failed to add item');
@@ -83,7 +83,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   decoration: const InputDecoration(labelText: 'Пароль'),
                 ),
                 DropdownButtonFormField<String>(
-                  decoration: InputDecoration(labelText: 'Роль'),
+                  decoration: const InputDecoration(labelText: 'Роль'),
                   value: selectedRole,
                   items: ['admin', 'user'].map((role) {
                     return DropdownMenuItem<String>(

@@ -11,10 +11,10 @@ import 'objects/userDto.dart';
 class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final UserDto userDto;
 
-  CustomAppBar({Key? key, required this.userDto}) : super(key: key);
+  const CustomAppBar({Key? key, required this.userDto}) : super(key: key);
 
   @override
-  Size get preferredSize => Size.fromHeight(kToolbarHeight);
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
   @override
   Widget build(BuildContext context) {
@@ -23,7 +23,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       leading: Builder(
         builder: (BuildContext context) {
           return IconButton(
-            icon: Icon(Icons.menu),
+            icon: const Icon(Icons.menu),
             onPressed: () {
               Scaffold.of(context).openDrawer();
             },
@@ -32,7 +32,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       actions: <Widget>[
         IconButton(
-          icon: Icon(Icons.home),
+          icon: const Icon(Icons.home),
           onPressed: () {
             Navigator.of(context).pushReplacement(PageTransition(
               type: PageTransitionType.leftToRight,
@@ -49,7 +49,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 class AppDrawer extends StatelessWidget {
   final UserDto userDto;
 
-  AppDrawer({required this.userDto});
+  const AppDrawer({super.key, required this.userDto});
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +57,7 @@ class AppDrawer extends StatelessWidget {
       child: ListView(
         padding: EdgeInsets.zero,
         children: <Widget>[
-          DrawerHeader(
+          const DrawerHeader(
             decoration: BoxDecoration(
               color: Colors.black,
             ),
@@ -70,7 +70,7 @@ class AppDrawer extends StatelessWidget {
             ),
           ),
           ListTile(
-            title: Text('Главная'),
+            title: const Text('Главная'),
             onTap: () {
               Navigator.of(context).pushReplacement(PageTransition(
                 type: PageTransitionType.leftToRight,
@@ -79,7 +79,7 @@ class AppDrawer extends StatelessWidget {
             },
           ),
           ListTile(
-            title: Text('Пользователи'),
+            title: const Text('Пользователи'),
             onTap: () {
               Navigator.of(context).pushReplacement(PageTransition(
                 type: PageTransitionType.leftToRight,
@@ -88,7 +88,7 @@ class AppDrawer extends StatelessWidget {
             },
           ),
           ListTile(
-            title: Text('Добавить пользователя'),
+            title: const Text('Добавить пользователя'),
             onTap: () {
               Navigator.of(context).pushReplacement(PageTransition(
                 type: PageTransitionType.leftToRight,
@@ -97,7 +97,7 @@ class AppDrawer extends StatelessWidget {
             },
           ),
           ListTile(
-            title: Text('Лицензии'),
+            title: const Text('Лицензии'),
             onTap: () {
               Navigator.of(context).pushReplacement(PageTransition(
                 type: PageTransitionType.leftToRight,
@@ -106,7 +106,7 @@ class AppDrawer extends StatelessWidget {
             },
           ),
           ListTile(
-            title: Text('Добавить лицензию'),
+            title: const Text('Добавить лицензию'),
             onTap: () {
               Navigator.of(context).pushReplacement(PageTransition(
                 type: PageTransitionType.leftToRight,

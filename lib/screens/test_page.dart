@@ -3,7 +3,6 @@ import 'package:fluttersrc/screens/login_page.dart';
 import 'package:fluttersrc/screens/registration.dart';
 import 'package:fluttersrc/screens/table.dart';
 import 'package:fluttersrc/screens/users_table.dart';
-import 'package:flutter/rendering.dart';
 import 'package:page_transition/page_transition.dart';
 
 import '../appBar.dart';
@@ -11,7 +10,7 @@ import '../objects/userDto.dart';
 import 'add_license.dart';
 
 class Home1Page extends StatefulWidget {
-  Home1Page({Key? key, required this.userDto}) : super(key: key);
+  const Home1Page({Key? key, required this.userDto}) : super(key: key);
   final UserDto userDto;
 
   @override
@@ -99,7 +98,7 @@ class _Home1PageState extends State<Home1Page> {
     } else if (color == Colors.yellow) {
       page = RegisterPage(userDto: widget.userDto);
     } else if (color == Colors.orange) {
-      page = LoginPage();
+      page = const LoginPage();
     }
 
     Navigator.of(context).pushReplacement(PageTransition(
@@ -117,7 +116,7 @@ class HoverButton extends StatefulWidget {
   final VoidCallback onPressed;
   final double? customRadius;
 
-  HoverButton(this.context, this.color, this.icon, this.onPressed,
+  const HoverButton(this.context, this.color, this.icon, this.onPressed,
       [this.customRadius]);
 
   @override
@@ -145,12 +144,12 @@ class _HoverButtonState extends State<HoverButton> {
         });
       },
       child: AnimatedContainer(
-        duration: Duration(milliseconds: 300),
+        duration: const Duration(milliseconds: 300),
         width: isHovered ? hoveredRadius : buttonRadius,
         height: isHovered ? hoveredRadius : buttonRadius,
         decoration: ShapeDecoration(
           color: widget.color,
-          shape: CircleBorder(),
+          shape: const CircleBorder(),
         ),
         child: IconButton(
           icon: Icon(widget.icon),

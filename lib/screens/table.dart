@@ -28,7 +28,7 @@ import '../objects/userDto.dart';
 class VerticalTextCell extends StatelessWidget {
   final String text;
 
-  VerticalTextCell(this.text, {super.key});
+  const VerticalTextCell(this.text, {super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +40,7 @@ class VerticalTextCell extends StatelessWidget {
 }
 
 class TablePage extends StatefulWidget {
-  TablePage({Key? key, required this.userDto}) : super(key: key);
+  const TablePage({Key? key, required this.userDto}) : super(key: key);
   final UserDto userDto;
 
   @override
@@ -266,7 +266,7 @@ class _TablePageState extends State<TablePage> {
               scrollDirection: Axis.vertical,
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
-                child: Container(
+                child: SizedBox(
                   width: MediaQuery.of(context).size.width,
                   child: DataTable(
                     border: TableBorder.all(
@@ -306,7 +306,7 @@ class _TablePageState extends State<TablePage> {
                       // ),
                       DataColumn(
                         // label: VerticalTextCell('срок'),
-                        label: Center(child: Icon(Icons.date_range)),
+                        label: const Center(child: Icon(Icons.date_range)),
                         tooltip: 'срок',
                         onSort: (columnIndex, ascending) {
                           setState(() {

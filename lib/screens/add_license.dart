@@ -1,16 +1,10 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:fluttersrc/screens/registration.dart';
 import 'package:fluttersrc/screens/table.dart';
-import 'package:fluttersrc/screens/test_page.dart';
-import 'package:fluttersrc/screens/users_table.dart';
 import 'package:http/http.dart' as http;
-import 'package:mask_text_input_formatter/mask_text_input_formatter.dart';
-
-
-import 'dart:convert';
 
 import '../appBar.dart';
 import '../objects/userDto.dart';
@@ -22,7 +16,7 @@ class HomePage extends StatefulWidget {
   @override
   _HomePageState createState() => _HomePageState();
 }
-//TODO придумать что-то с полем даты
+
 class _HomePageState extends State<HomePage> {
   final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>();
   final TextEditingController _nameController = TextEditingController();
@@ -78,16 +72,45 @@ class _HomePageState extends State<HomePage> {
       if (response.statusCode == 201) {
         fetchItems(); // Обновите список после добавления элемента
         _formKey.currentState!.reset();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            backgroundColor: Colors.green,
+            content: Text('Лицензия успешно добавлена'),
+            duration: Duration(seconds: 2), // Длительность отображения Snackbar
+          ),
+        );
       } else {
+        if (response.statusCode == 400) {
+          ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            backgroundColor: Colors.red,
+            content: Text('Неверный формат даты'),
+            duration: Duration(seconds: 2), // Длительность отображения Snackbar
+          ),
+        );
+        }
         throw Exception('Failed to add item');
       }
     }
   }
 
+  // Function to show date picker
+  Future<void> _selectDate(BuildContext context) async {
+    DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime.now(),
+      firstDate: DateTime(2000),
+      lastDate: DateTime(2101),
+    );
+    if (picked != null && picked != DateTime.now()) {
+      _expiryDateController.text =
+          "${picked.year}/${picked.month}/${picked.day}";
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final Object? userDto = ModalRoute.of(context)!.settings.arguments;
+    //final Object? userDto = ModalRoute.of(context)!.settings.arguments;
     return Scaffold(
       appBar: CustomAppBar(userDto: widget.userDto),
       drawer: AppDrawer(userDto: widget.userDto),
@@ -105,7 +128,7 @@ class _HomePageState extends State<HomePage> {
                 FormBuilderDropdown(
                   name: 'license_type',
                   decoration: const InputDecoration(labelText: 'Тип лицензии'),
-                  items: [
+                  items: const [
                     DropdownMenuItem(
                       value: 1,
                       child: Text('Сервер'),
@@ -124,17 +147,37 @@ class _HomePageState extends State<HomePage> {
                     _licenseTypeController.text = value.toString();
                   },
                 ),
-
-                FormBuilderTextField(
-                  name: 'expiry_date',
-                  controller: _expiryDateController,
-                  decoration: const InputDecoration(
-                    labelText: 'Срок действия (гггг/мм/дд)',
-                  ),
-                  inputFormatters: [
-                    _DateInputFormatter(),
+                Row(
+                  children: [
+                    Expanded(
+                      child: FormBuilderTextField(
+                        onTap: () {
+                          _selectDate(context);
+                        },
+                        name: 'expiry_date',
+                        controller: _expiryDateController,
+                        decoration: const InputDecoration(
+                          labelText: 'Срок действия (гггг/мм/дд)',
+                        ),
+                        readOnly: true,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        // Очистите значение контроллера при нажатии на кнопку "Очистить"
+                        _expiryDateController.clear();
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.calendar_today),
+                      onPressed: () {
+                        _selectDate(context);
+                      },
+                    ),
                   ],
                 ),
+
                 FormBuilderTextField(
                   name: 'max_vpn_sessions',
                   controller: _maxVpnSessionsController,
@@ -175,22 +218,22 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-class _DateInputFormatter extends TextInputFormatter {
-  @override
-  TextEditingValue formatEditUpdate(
-      TextEditingValue oldValue,
-      TextEditingValue newValue,
-      ) {
-    var text = newValue.text;
-
-    if (text.length == 4 || text.length == 7) {
-      // User entered a forward slash, move to the next position
-      text += '/';
-    }
-
-    return TextEditingValue(
-      text: text,
-      selection: TextSelection.collapsed(offset: text.length),
-    );
-  }
-}
+// class _DateInputFormatter extends TextInputFormatter {
+//   @override
+//   TextEditingValue formatEditUpdate(
+//       TextEditingValue oldValue,
+//       TextEditingValue newValue,
+//       ) {
+//     var text = newValue.text;
+//
+//     if (text.length == 4 || text.length == 7) {
+//       // User entered a forward slash, move to the next position
+//       text += '/';
+//     }
+//
+//     return TextEditingValue(
+//       text: text,
+//       selection: TextSelection.collapsed(offset: text.length),
+//     );
+//   }
+// }
