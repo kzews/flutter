@@ -40,7 +40,6 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             ));
           },
         ),
-        // Добавьте другие иконки действий, если необходимо
       ],
     );
   }

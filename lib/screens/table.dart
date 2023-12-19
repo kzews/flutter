@@ -7,25 +7,6 @@ import 'package:http/http.dart' as http;
 import '../objects/userDto.dart';
 import '../services/backButton.dart';
 
-// void main() {
-//   runApp(const MyApp());
-// }
-//
-// class MyApp extends StatelessWidget {
-//   const MyApp({super.key});
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       title: 'Flutter Database App',
-//       theme: ThemeData(
-//         primarySwatch: Colors.blue,
-//       ),
-//       home: TablePage(userDto: ,),
-//     );
-//   }
-// }
-
 class VerticalTextCell extends StatelessWidget {
   final String text;
 
@@ -110,19 +91,16 @@ class _TablePageState extends State<TablePage> {
       );
 
       if (response.statusCode == 200) {
-        // Элемент успешно удален, обновите список элементов
         await fetchItems();
 
-        // Отобразите успешное сообщение
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             backgroundColor: Colors.green,
             content: Text('Элемент успешно удален'),
-            duration: Duration(seconds: 2), // Длительность отображения Snackbar
+            duration: Duration(seconds: 2),
           ),
         );
       } else {
-        // Обработайте ошибку удаления здесь, например, показав диалоговое окно с сообщением об ошибке
         showDialog(
           context: context,
           builder: (BuildContext context) {
@@ -257,15 +235,6 @@ class _TablePageState extends State<TablePage> {
                         labelText: 'Фильтр по типу лицензии',
                       ),
                     ),
-                    // TextField(
-                    //   controller: licenseNumberFilterController,
-                    //   onChanged: (value) {
-                    //     _filterItems();
-                    //   },
-                    //   decoration: const InputDecoration(
-                    //     labelText: 'Фильтр по номеру лицензии',
-                    //   ),
-                    // ),
                   ],
                 ),
               ),
@@ -280,13 +249,11 @@ class _TablePageState extends State<TablePage> {
                         width: 2.0,
                         color: Colors.black45,
                       ),
-                      // headingRowHeight: 200,
                       columnSpacing: 1,
                       sortAscending: _sortAscending,
                       sortColumnIndex: _sortColumnIndex,
                       columns: <DataColumn>[
                         DataColumn(
-                          // label: VerticalTextCell('название'),
                           label: const Icon(Icons.account_box),
                           tooltip: 'Владелец',
                           onSort: (columnIndex, ascending) {
@@ -298,21 +265,7 @@ class _TablePageState extends State<TablePage> {
                             });
                           },
                         ),
-                        // DataColumn(
-                        //   // label: VerticalTextCell('дата\nдобавления'),
-                        //   label: const Icon(Icons.access_alarm),
-                        //   tooltip: 'дата\nдобавления',
-                        //   onSort: (columnIndex, ascending) {
-                        //     setState(() {
-                        //       _sortAscending = ascending;
-                        //       _sortColumnIndex = columnIndex;
-                        //       _sort((item) => item['date_added'], columnIndex,
-                        //           ascending);
-                        //     });
-                        //   },
-                        // ),
                         DataColumn(
-                          // label: VerticalTextCell('срок'),
                           label: const Center(child: Icon(Icons.date_range)),
                           tooltip: 'срок',
                           onSort: (columnIndex, ascending) {
@@ -325,7 +278,6 @@ class _TablePageState extends State<TablePage> {
                           },
                         ),
                         DataColumn(
-                          // label: VerticalTextCell('пропускная\nспособность'),
                           label: const Icon(
                             Icons.network_check,
                           ),
@@ -340,7 +292,6 @@ class _TablePageState extends State<TablePage> {
                           },
                         ),
                         DataColumn(
-                          // label: VerticalTextCell('макс кол-во\nпользователей'),
                           label: const Icon(
                             Icons.people,
                           ),
@@ -355,7 +306,6 @@ class _TablePageState extends State<TablePage> {
                           },
                         ),
                         DataColumn(
-                          // label: VerticalTextCell('макс кол-во\nсессий'),
                           label: const Icon(Icons.account_tree),
                           tooltip: 'макс кол-во сессий',
                           onSort: (columnIndex, ascending) {
@@ -368,7 +318,6 @@ class _TablePageState extends State<TablePage> {
                           },
                         ),
                         DataColumn(
-                          // label: VerticalTextCell('тип лицензии'),
                           label: const Icon(Icons.format_list_numbered_rounded),
                           tooltip: 'тип лицензии',
                           onSort: (columnIndex, ascending) {
@@ -380,20 +329,7 @@ class _TablePageState extends State<TablePage> {
                             });
                           },
                         ),
-                        // DataColumn(
-                        //   label: const Icon(Icons.numbers),
-                        //   tooltip: 'номер лицензии',
-                        //   onSort: (columnIndex, ascending) {
-                        //     setState(() {
-                        //       _sortAscending = ascending;
-                        //       _sortColumnIndex = columnIndex;
-                        //       _sort((item) => item['license_number'], columnIndex,
-                        //           ascending);
-                        //     });
-                        //   },
-                        // ),
                         const DataColumn(
-                          // label: VerticalTextCell('Действия'),
                           label: Icon(
                             Icons.delete_outline_outlined,
                             color: Colors.red,
@@ -407,13 +343,11 @@ class _TablePageState extends State<TablePage> {
                               (item) {
                                 return DataRow(
                                   cells: <DataCell>[
-                                    // DataCell(Text(item['id'].toString())),
                                     DataCell(
                                       Center(
                                         child: Text(item['name']),
                                       ),
                                     ),
-                                    // DataCell(Text(item['date_added'].toString())),
                                     DataCell(
                                       Text(
                                         item['expiry_date'].toString().isEmpty
@@ -421,7 +355,6 @@ class _TablePageState extends State<TablePage> {
                                             : item['expiry_date'].toString(),
                                       ),
                                     ),
-
                                     DataCell(
                                       Center(
                                         child: Text(
@@ -447,14 +380,11 @@ class _TablePageState extends State<TablePage> {
                                                 .toString(),
                                       ),
                                     ),
-
                                     DataCell(
                                       Text(
                                         item['license_type'].toString(),
                                       ),
                                     ),
-                                    // DataCell(
-                                    //     Text(item['license_number'].toString())),
                                     DataCell(
                                       ElevatedButton(
                                         onPressed: () {
@@ -462,7 +392,7 @@ class _TablePageState extends State<TablePage> {
                                         },
                                         child: const Icon(
                                           Icons.delete,
-                                          color: Colors.white, // цвет иконки
+                                          color: Colors.white,
                                         ),
                                       ),
                                     ),
@@ -477,7 +407,6 @@ class _TablePageState extends State<TablePage> {
                                     DataCell(
                                       Text(item['name']),
                                     ),
-                                    // DataCell(Text(item['date_added'].toString())),
                                     DataCell(
                                         Text(item['expiry_date'].toString())),
                                     DataCell(
@@ -488,9 +417,6 @@ class _TablePageState extends State<TablePage> {
                                         item['max_vpn_sessions'].toString())),
                                     DataCell(
                                         Text(item['license_type'].toString())),
-                                    // DataCell(
-                                    //     Text(item['license_number'].toString())),
-                                    // DataCell(Text(item['license_key'].toString())),
                                     DataCell(
                                       ElevatedButton(
                                         onPressed: () {
@@ -498,7 +424,7 @@ class _TablePageState extends State<TablePage> {
                                         },
                                         child: const Icon(
                                           Icons.delete,
-                                          color: Colors.white, // цвет иконки
+                                          color: Colors.white,
                                         ),
                                       ),
                                     ),

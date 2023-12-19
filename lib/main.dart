@@ -42,7 +42,6 @@ class MyApp extends StatelessWidget {
             Colors.green.withOpacity(0.87), // Прозрачно-зеленый фон
       ),
       home: const LoginPage(),
-      // Добавьте здесь другие страницы и их роутинг, если необходимо
     );
   }
 }

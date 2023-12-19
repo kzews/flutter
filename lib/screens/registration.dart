@@ -24,8 +24,6 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _loginController = TextEditingController();
   final TextEditingController _passwordTypeController = TextEditingController();
 
-  //final TextEditingController _roleController = TextEditingController();
-
   List<Map<String, dynamic>> items = [];
   DateTime? currentBackPressTime;
 
@@ -39,18 +37,16 @@ class _RegisterPageState extends State<RegisterPage> {
         body: jsonEncode(<String, dynamic>{
           'login': _loginController.text,
           'password': _passwordTypeController.text,
-          'role': selectedRole, // Используйте выбранную роль здесь
+          'role': selectedRole,
         }),
       );
 
       if (response.statusCode == 201 || response.statusCode == 200) {
-        // Обновите список после добавления элемента
         setState(() {
           _loginController.clear();
           _passwordTypeController.clear();
           selectedRole = null;
         });
-        // _formKey.currentState!.reset();
       } else {
         if (response.statusCode == 400) {
           print(response.statusCode);

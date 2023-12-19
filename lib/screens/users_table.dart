@@ -94,15 +94,11 @@ class _UsersPageState extends State<UsersPage> {
           data: jsonEncode(userDto),
           options: Options(headers: {
             'Content-Type': 'application/json',
-            // Добавьте другие необходимые заголовки здесь
           }),
         );
 
         if (response.statusCode == 200) {
-          // Элемент успешно удален, обновите список элементов
           await fetchItems(widget.userDto);
-
-          // Отобразите успешное сообщение
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               backgroundColor: Colors.green,
@@ -112,7 +108,6 @@ class _UsersPageState extends State<UsersPage> {
             ),
           );
         } else {
-          // Обработайте ошибку удаления здесь
           showDialog(
             context: context,
             builder: (BuildContext context) {
@@ -132,7 +127,6 @@ class _UsersPageState extends State<UsersPage> {
           );
         }
       } catch (error) {
-        // Обработайте ошибки Dio здесь
         print(error.toString());
       }
     }
@@ -153,8 +147,13 @@ class _UsersPageState extends State<UsersPage> {
     );
 
     if (response.statusCode == 200) {
-      // Пользователь успешно обновлен
-      // Обработайте успешный ответ по вашему усмотрению
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          backgroundColor: Colors.green,
+          content: Text('Пользователь обновлен'),
+          duration: Duration(seconds: 2), // Длительность отображения Snackbar
+        ),
+      );
     } else {
       print(response.statusCode);
       if (response.statusCode == 400) {
@@ -162,13 +161,11 @@ class _UsersPageState extends State<UsersPage> {
           const SnackBar(
             backgroundColor: Colors.red,
             content: Text('Данный Логин уже занят! Используйте другой логин!'),
-            duration: Duration(seconds: 2), // Длительность отображения Snackbar
+            duration: Duration(seconds: 2),
           ),
         );
         print("invalid login");
       }
-      // Обработка ошибок при обновлении пользователя
-      // Показать сообщение об ошибке или выполнить другие действия
     }
   }
 
@@ -188,7 +185,7 @@ class _UsersPageState extends State<UsersPage> {
           const SnackBar(
             backgroundColor: Colors.green,
             content: Text('Загружено успешно'),
-            duration: Duration(seconds: 2), // Длительность отображения Snackbar
+            duration: Duration(seconds: 2),
           ),
         );
         final List<dynamic> responseData = json.decode(response.data);
@@ -204,7 +201,7 @@ class _UsersPageState extends State<UsersPage> {
             backgroundColor: Colors.red,
             content:
                 Text('для просмотра нужно обладать правами администратора'),
-            duration: Duration(seconds: 2), // Длительность отображения Snackbar
+            duration: Duration(seconds: 2),
           ),
         );
         throw Exception('Failed to load items');
@@ -233,7 +230,6 @@ class _UsersPageState extends State<UsersPage> {
   }
 
   void _filterItems() {
-    // fetchItems(widget.userDto);
     final loginFilter = loginController.text.toLowerCase();
     final passwordTypeFilter = passwordFilterController.text.toLowerCase();
     final roleFilter = roleFilterController.text.toLowerCase();
@@ -291,8 +287,7 @@ class _UsersPageState extends State<UsersPage> {
                 _updateUser(item['id'], loginController.text,
                     passwordController.text, roleController.text);
                 fetchItems(widget.userDto);
-                Navigator.of(context)
-                    .pop(); // Закрыть диалоговое окно после сохранения
+                Navigator.of(context).pop();
               },
               child: const Text('Сохранить и обновить'),
             ),
@@ -305,8 +300,6 @@ class _UsersPageState extends State<UsersPage> {
   @override
   Widget build(BuildContext context) {
     final Object? userDto = ModalRoute.of(context)!.settings.arguments;
-    // double bottomPadding =
-    //     MediaQuery.of(context).size.height * 0.05; // 5% высоты экрана
     return WillPopScope(
       onWillPop: () async {
         return backButton(context);
@@ -330,15 +323,6 @@ class _UsersPageState extends State<UsersPage> {
                         labelText: 'Фильтр по логину',
                       ),
                     ),
-                    // TextField(
-                    //   controller: passwordFilterController,
-                    //   onChanged: (value) {
-                    //     _filterItems();
-                    //   },
-                    //   decoration: const InputDecoration(
-                    //     labelText: 'Фильтр по паролю',
-                    //   ),
-                    // ),
                     TextField(
                       controller: roleFilterController,
                       onChanged: (value) {
@@ -380,21 +364,7 @@ class _UsersPageState extends State<UsersPage> {
                             });
                           },
                         ),
-                        // DataColumn(
-                        //   // label: VerticalTextCell('дата\nдобавления'),
-                        //   label: const Icon(Icons.personal_injury_rounded),
-                        //   tooltip: 'пароль',
-                        //   onSort: (columnIndex, ascending) {
-                        //     setState(() {
-                        //       _sortAscending = ascending;
-                        //       _sortColumnIndex = columnIndex;
-                        //       _sort((item) => item['password'], columnIndex,
-                        //           ascending);
-                        //     });
-                        //   },
-                        // ),
                         DataColumn(
-                          // label: VerticalTextCell('срок'),
                           label: const Icon(Icons.person_search_rounded),
                           tooltip: 'роль',
                           onSort: (columnIndex, ascending) {
@@ -407,14 +377,12 @@ class _UsersPageState extends State<UsersPage> {
                           },
                         ),
                         const DataColumn(
-                          // label: VerticalTextCell('Действия'),
                           label: Icon(
                             Icons.delete_outline_outlined,
                             color: Colors.red,
                           ),
                         ),
                         const DataColumn(
-                          // label: VerticalTextCell('Действия'),
                           label: Icon(
                             Icons.edit,
                             color: Colors.red,
@@ -428,19 +396,7 @@ class _UsersPageState extends State<UsersPage> {
                               (item) {
                                 return DataRow(
                                   cells: <DataCell>[
-                                    // DataCell(Text(item['id'].toString())),
-                                    // DataCell(
-                                    //   TextFormField(
-                                    //     initialValue: item['login'], // Устанавливаем начальное значение поля
-                                    //     onChanged: (newValue) {
-                                    //       // Обработка изменений в поле login
-                                    //       item['login'] = newValue;// Обновляем значение в вашем источнике данных
-                                    //     },
-                                    //
-                                    //   ),
-                                    // ),
                                     DataCell(Text(item['login'].toString())),
-                                    // DataCell(Text(item['password'].toString())),
                                     DataCell(Text(item['role'].toString())),
                                     DataCell(
                                       ElevatedButton(
@@ -449,11 +405,10 @@ class _UsersPageState extends State<UsersPage> {
                                         },
                                         child: const Icon(
                                           Icons.delete,
-                                          color: Colors.white, // цвет иконки
+                                          color: Colors.white,
                                         ),
                                       ),
                                     ),
-
                                     DataCell(
                                       ElevatedButton(
                                         onPressed: () {
@@ -461,7 +416,7 @@ class _UsersPageState extends State<UsersPage> {
                                         },
                                         child: const Icon(
                                           Icons.edit,
-                                          color: Colors.white, // цвет иконки
+                                          color: Colors.white,
                                         ),
                                       ),
                                     ),
@@ -473,21 +428,8 @@ class _UsersPageState extends State<UsersPage> {
                               (item) {
                                 return DataRow(
                                   cells: <DataCell>[
-                                    // DataCell(
-                                    //   TextFormField(
-                                    //     initialValue: item['login'], // Устанавливаем начальное значение поля
-                                    //     onChanged: (newValue) {
-                                    //       // Обработка изменений в поле login
-                                    //       item['login'] = newValue;// Обновляем значение в вашем источнике данных
-                                    //     },
-                                    //
-                                    //   ),
-                                    // ),
                                     DataCell(Text(item['login'].toString())),
-                                    // DataCell(Text(item['password'].toString())),
                                     DataCell(Text(item['role'].toString())),
-
-                                    // DataCell(Text(item['license_key'].toString())),
                                     DataCell(
                                       ElevatedButton(
                                         onPressed: () {
@@ -495,7 +437,7 @@ class _UsersPageState extends State<UsersPage> {
                                         },
                                         child: const Icon(
                                           Icons.delete,
-                                          color: Colors.white, // цвет иконки
+                                          color: Colors.white,
                                         ),
                                       ),
                                     ),
@@ -506,7 +448,7 @@ class _UsersPageState extends State<UsersPage> {
                                         },
                                         child: const Icon(
                                           Icons.edit,
-                                          color: Colors.white, // цвет иконки
+                                          color: Colors.white,
                                         ),
                                       ),
                                     ),
@@ -518,28 +460,9 @@ class _UsersPageState extends State<UsersPage> {
                   ),
                 ),
               ),
-              // Positioned(
-              //   bottom: bottomPadding,
-              //   right: bottomPadding,
-              //   child: FloatingActionButton(
-              //     onPressed: () {
-              //       // Обработка нажатия кнопки добавления пользователя
-              //       // Например, откройте новый экран для добавления пользователя
-              //       Navigator.push(
-              //         context,
-              //         MaterialPageRoute(
-              //           builder: (context) => RegisterPage(userDto: widget.userDto),
-              //         ),
-              //       );
-              //     },
-              //     child: Icon(Icons.person_add_alt_rounded),
-              //   ),
-              // ),
             ],
           ),
         ),
-
-        ///////////////
       ),
     );
   }

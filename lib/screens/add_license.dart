@@ -78,7 +78,7 @@ class _HomePageState extends State<HomePage> {
           const SnackBar(
             backgroundColor: Colors.green,
             content: Text('Лицензия успешно добавлена'),
-            duration: Duration(seconds: 2), // Длительность отображения Snackbar
+            duration: Duration(seconds: 2),
           ),
         );
       } else {
@@ -88,7 +88,7 @@ class _HomePageState extends State<HomePage> {
               backgroundColor: Colors.red,
               content: Text('Неверный формат даты'),
               duration:
-                  Duration(seconds: 2), // Длительность отображения Snackbar
+                  Duration(seconds: 2),
             ),
           );
         }
@@ -113,7 +113,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    //final Object? userDto = ModalRoute.of(context)!.settings.arguments;
     return WillPopScope(
       onWillPop: () async {
         return backButton(context);
@@ -173,7 +172,6 @@ class _HomePageState extends State<HomePage> {
                       IconButton(
                         icon: const Icon(Icons.clear),
                         onPressed: () {
-                          // Очистите значение контроллера при нажатии на кнопку "Очистить"
                           _expiryDateController.clear();
                         },
                       ),
@@ -226,22 +224,3 @@ class _HomePageState extends State<HomePage> {
     );
   }
 }
-// class _DateInputFormatter extends TextInputFormatter {
-//   @override
-//   TextEditingValue formatEditUpdate(
-//       TextEditingValue oldValue,
-//       TextEditingValue newValue,
-//       ) {
-//     var text = newValue.text;
-//
-//     if (text.length == 4 || text.length == 7) {
-//       // User entered a forward slash, move to the next position
-//       text += '/';
-//     }
-//
-//     return TextEditingValue(
-//       text: text,
-//       selection: TextSelection.collapsed(offset: text.length),
-//     );
-//   }
-// }

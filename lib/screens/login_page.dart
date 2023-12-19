@@ -35,21 +35,6 @@ class _LoginPageState extends State<LoginPage> {
   bool _isPasswordVisible = false; // Добавлено состояние для отображения пароля
   DateTime? currentBackPressTime;
 
-  Future<bool> _onWillPop() async {
-    // Ваш код для обработки нажатия кнопки "назад"
-    // Возвращайте true, если вы хотите разрешить выход из приложения
-    // Возвращайте false, если вы хотите предотвратить выход из приложения
-    return _exitApp();
-  }
-
-  Future<bool> _exitApp() async {
-    // Первый раз нажали "назад"
-    // Toast.show("Нажмите еще раз для выхода", context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
-    await Future.delayed(const Duration(seconds: 2));
-    // Второй раз нажали "назад", разрешаем выход из приложения
-    return true;
-  }
-
   @override
   Widget build(BuildContext context) {
     return WillPopScope(
