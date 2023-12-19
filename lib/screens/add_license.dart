@@ -8,6 +8,7 @@ import 'package:http/http.dart' as http;
 
 import '../appBar.dart';
 import '../objects/userDto.dart';
+import '../services/backButton.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key, required this.userDto}) : super(key: key);
@@ -28,6 +29,7 @@ class _HomePageState extends State<HomePage> {
   final TextEditingController _maxUsersController = TextEditingController();
 
   List<Map<String, dynamic>> items = [];
+  DateTime? currentBackPressTime;
 
   @override
   void initState() {
@@ -82,12 +84,13 @@ class _HomePageState extends State<HomePage> {
       } else {
         if (response.statusCode == 400) {
           ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            backgroundColor: Colors.red,
-            content: Text('Неверный формат даты'),
-            duration: Duration(seconds: 2), // Длительность отображения Snackbar
-          ),
-        );
+            const SnackBar(
+              backgroundColor: Colors.red,
+              content: Text('Неверный формат даты'),
+              duration:
+                  Duration(seconds: 2), // Длительность отображения Snackbar
+            ),
+          );
         }
         throw Exception('Failed to add item');
       }
@@ -111,109 +114,114 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     //final Object? userDto = ModalRoute.of(context)!.settings.arguments;
-    return Scaffold(
-      appBar: CustomAppBar(userDto: widget.userDto),
-      drawer: AppDrawer(userDto: widget.userDto),
-      body: Column(
-        children: [
-          FormBuilder(
-            key: _formKey,
-            child: Column(
-              children: [
-                FormBuilderTextField(
-                  name: 'name',
-                  controller: _nameController,
-                  decoration: const InputDecoration(labelText: 'Владелец'),
-                ),
-                FormBuilderDropdown(
-                  name: 'license_type',
-                  decoration: const InputDecoration(labelText: 'Тип лицензии'),
-                  items: const [
-                    DropdownMenuItem(
-                      value: 1,
-                      child: Text('Сервер'),
-                    ),
-                    DropdownMenuItem(
-                      value: 3,
-                      child: Text('Клиент'),
-                    ),
-                    DropdownMenuItem(
-                      value: 2,
-                      child: Text('Мост'),
-                    ),
-                  ],
-                  onChanged: (value) {
-                    // Обработка выбора значения
-                    _licenseTypeController.text = value.toString();
-                  },
-                ),
-                Row(
-                  children: [
-                    Expanded(
-                      child: FormBuilderTextField(
-                        onTap: () {
+    return WillPopScope(
+      onWillPop: () async {
+        return backButton(context);
+      },
+      child: Scaffold(
+        appBar: CustomAppBar(userDto: widget.userDto),
+        drawer: AppDrawer(userDto: widget.userDto),
+        body: Column(
+          children: [
+            FormBuilder(
+              key: _formKey,
+              child: Column(
+                children: [
+                  FormBuilderTextField(
+                    name: 'name',
+                    controller: _nameController,
+                    decoration: const InputDecoration(labelText: 'Владелец'),
+                  ),
+                  FormBuilderDropdown(
+                    name: 'license_type',
+                    decoration:
+                        const InputDecoration(labelText: 'Тип лицензии'),
+                    items: const [
+                      DropdownMenuItem(
+                        value: 1,
+                        child: Text('Сервер'),
+                      ),
+                      DropdownMenuItem(
+                        value: 3,
+                        child: Text('Клиент'),
+                      ),
+                      DropdownMenuItem(
+                        value: 2,
+                        child: Text('Мост'),
+                      ),
+                    ],
+                    onChanged: (value) {
+                      // Обработка выбора значения
+                      _licenseTypeController.text = value.toString();
+                    },
+                  ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: FormBuilderTextField(
+                          onTap: () {
+                            _selectDate(context);
+                          },
+                          name: 'expiry_date',
+                          controller: _expiryDateController,
+                          decoration: const InputDecoration(
+                            labelText: 'Срок действия (гггг/мм/дд)',
+                          ),
+                          readOnly: true,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.clear),
+                        onPressed: () {
+                          // Очистите значение контроллера при нажатии на кнопку "Очистить"
+                          _expiryDateController.clear();
+                        },
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.calendar_today),
+                        onPressed: () {
                           _selectDate(context);
                         },
-                        name: 'expiry_date',
-                        controller: _expiryDateController,
-                        decoration: const InputDecoration(
-                          labelText: 'Срок действия (гггг/мм/дд)',
-                        ),
-                        readOnly: true,
                       ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.clear),
-                      onPressed: () {
-                        // Очистите значение контроллера при нажатии на кнопку "Очистить"
-                        _expiryDateController.clear();
-                      },
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.calendar_today),
-                      onPressed: () {
-                        _selectDate(context);
-                      },
-                    ),
-                  ],
-                ),
-
-                FormBuilderTextField(
-                  name: 'max_vpn_sessions',
-                  controller: _maxVpnSessionsController,
-                  decoration: const InputDecoration(
-                      labelText: 'Максимальное количество VPN сессий'),
-                ),
-                FormBuilderTextField(
-                  name: 'max_bandwidth',
-                  controller: _maxBandwidthController,
-                  decoration: const InputDecoration(
-                      labelText: 'Максимальная пропускная способность'),
-                ),
-                FormBuilderTextField(
-                  name: 'max_users',
-                  controller: _maxUsersController,
-                  decoration: const InputDecoration(
-                      labelText: 'Максимальное количество пользователей'),
-                ),
-              ],
+                    ],
+                  ),
+                  FormBuilderTextField(
+                    name: 'max_vpn_sessions',
+                    controller: _maxVpnSessionsController,
+                    decoration: const InputDecoration(
+                        labelText: 'Максимальное количество VPN сессий'),
+                  ),
+                  FormBuilderTextField(
+                    name: 'max_bandwidth',
+                    controller: _maxBandwidthController,
+                    decoration: const InputDecoration(
+                        labelText: 'Максимальная пропускная способность'),
+                  ),
+                  FormBuilderTextField(
+                    name: 'max_users',
+                    controller: _maxUsersController,
+                    decoration: const InputDecoration(
+                        labelText: 'Максимальное количество пользователей'),
+                  ),
+                ],
+              ),
             ),
-          ),
-          ElevatedButton(
-            onPressed: addItem,
-            child: const Text('Добавить элемент'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              await Navigator.pushReplacement(
-                context,
-                CupertinoPageRoute(
-                    builder: (context) => TablePage(userDto: widget.userDto)),
-              );
-            },
-            child: const Text('переход к таблице'),
-          ),
-        ],
+            ElevatedButton(
+              onPressed: addItem,
+              child: const Text('Добавить элемент'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                await Navigator.pushReplacement(
+                  context,
+                  CupertinoPageRoute(
+                      builder: (context) => TablePage(userDto: widget.userDto)),
+                );
+              },
+              child: const Text('переход к таблице'),
+            ),
+          ],
+        ),
       ),
     );
   }

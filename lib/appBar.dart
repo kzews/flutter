@@ -114,6 +114,23 @@ class AppDrawer extends StatelessWidget {
               ));
             },
           ),
+          ListTile(
+            title: const Text('Данные о пользователе'),
+
+            onTap: () {
+              Navigator.of(context).pushReplacement(PageTransition(
+                type: PageTransitionType.leftToRight,
+                child: HomePage(userDto: userDto),
+              ));
+            },
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Логин: ${userDto.login}'),
+                Text('Пароль: ${userDto.password}'),
+              ],
+            ),
+          ),
         ],
       ),
     );

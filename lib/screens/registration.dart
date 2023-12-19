@@ -7,6 +7,7 @@ import 'package:fluttersrc/screens/users_table.dart';
 import 'package:http/http.dart' as http;
 
 import '../appBar.dart';
+import '../services/backButton.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({Key? key, required this.userDto}) : super(key: key);
@@ -26,6 +27,7 @@ class _RegisterPageState extends State<RegisterPage> {
   //final TextEditingController _roleController = TextEditingController();
 
   List<Map<String, dynamic>> items = [];
+  DateTime? currentBackPressTime;
 
   Future<void> addItem() async {
     if (_formKey.currentState!.validate()) {
@@ -41,9 +43,14 @@ class _RegisterPageState extends State<RegisterPage> {
         }),
       );
 
-      if (response.statusCode == 201) {
+      if (response.statusCode == 201 || response.statusCode == 200) {
         // Обновите список после добавления элемента
-        _formKey.currentState!.reset();
+        setState(() {
+          _loginController.clear();
+          _passwordTypeController.clear();
+          selectedRole = null;
+        });
+        // _formKey.currentState!.reset();
       } else {
         if (response.statusCode == 400) {
           print(response.statusCode);
@@ -55,7 +62,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   Duration(seconds: 2), // Длительность отображения Snackbar
             ),
           );
-          throw Exception('Failed to add item');
+          throw Exception('Failed to add item (invalid login)');
         }
       }
     }
@@ -63,61 +70,66 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: CustomAppBar(userDto: widget.userDto),
-      drawer: AppDrawer(userDto: widget.userDto),
-      body: Column(
-        children: [
-          FormBuilder(
-            key: _formKey,
-            child: Column(
-              children: [
-                FormBuilderTextField(
-                  name: 'login',
-                  controller: _loginController,
-                  decoration: const InputDecoration(labelText: 'Имя'),
-                ),
-                FormBuilderTextField(
-                  name: 'password',
-                  controller: _passwordTypeController,
-                  decoration: const InputDecoration(labelText: 'Пароль'),
-                ),
-                DropdownButtonFormField<String>(
-                  decoration: const InputDecoration(labelText: 'Роль'),
-                  value: selectedRole,
-                  items: ['admin', 'user'].map((role) {
-                    return DropdownMenuItem<String>(
-                      value: role,
-                      child: Text(role),
-                    );
-                  }).toList(),
-                  onChanged: (newValue) {
-                    setState(() {
-                      selectedRole = newValue;
-                    });
-                  },
-                ),
-              ],
-            ),
-          ),
-          ElevatedButton(
-            onPressed: addItem,
-            child: const Text('Добавить usera'),
-          ),
-          ElevatedButton(
-            onPressed: () async {
-              await Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => UsersPage(
-                    userDto: widget.userDto,
+    return WillPopScope(
+      onWillPop: () async {
+        return backButton(context);
+      },
+      child: Scaffold(
+        appBar: CustomAppBar(userDto: widget.userDto),
+        drawer: AppDrawer(userDto: widget.userDto),
+        body: Column(
+          children: [
+            FormBuilder(
+              key: _formKey,
+              child: Column(
+                children: [
+                  FormBuilderTextField(
+                    name: 'login',
+                    controller: _loginController,
+                    decoration: const InputDecoration(labelText: 'Имя'),
                   ),
-                ),
-              );
-            },
-            child: const Text('Пользователи'),
-          ),
-        ],
+                  FormBuilderTextField(
+                    name: 'password',
+                    controller: _passwordTypeController,
+                    decoration: const InputDecoration(labelText: 'Пароль'),
+                  ),
+                  DropdownButtonFormField<String>(
+                    decoration: const InputDecoration(labelText: 'Роль'),
+                    value: selectedRole,
+                    items: ['admin', 'user'].map((role) {
+                      return DropdownMenuItem<String>(
+                        value: role,
+                        child: Text(role),
+                      );
+                    }).toList(),
+                    onChanged: (newValue) {
+                      setState(() {
+                        selectedRole = newValue;
+                      });
+                    },
+                  ),
+                ],
+              ),
+            ),
+            ElevatedButton(
+              onPressed: addItem,
+              child: const Text('Добавить usera'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                await Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => UsersPage(
+                      userDto: widget.userDto,
+                    ),
+                  ),
+                );
+              },
+              child: const Text('Пользователи'),
+            ),
+          ],
+        ),
       ),
     );
   }

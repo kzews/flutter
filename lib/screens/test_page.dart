@@ -7,6 +7,7 @@ import 'package:page_transition/page_transition.dart';
 
 import '../appBar.dart';
 import '../objects/userDto.dart';
+import '../services/backButton.dart';
 import 'add_license.dart';
 
 class Home1Page extends StatefulWidget {
@@ -19,6 +20,7 @@ class Home1Page extends StatefulWidget {
 
 class _Home1PageState extends State<Home1Page> {
   late bool isHovered; // Инициализация переменной в состоянии
+  DateTime? currentBackPressTime;
 
   @override
   void initState() {
@@ -35,54 +37,61 @@ class _Home1PageState extends State<Home1Page> {
     double bottomPadding =
         MediaQuery.of(context).size.height * 0.05; // 5% высоты экрана
 
-    return Scaffold(
-      appBar: CustomAppBar(userDto: widget.userDto),
-      drawer: AppDrawer(userDto: widget.userDto),
-      body: Stack(
-        children: [
-          Center(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    HoverButton(context, Colors.red, Icons.groups_outlined, () {
-                      _navigateToPage(context, Colors.red);
-                    }),
-                    SizedBox(width: screenWidth * 0.07),
-                    HoverButton(context, Colors.lightGreen, Icons.add_card, () {
-                      _navigateToPage(context, Colors.lightGreen);
-                    }),
-                  ],
-                ),
-                SizedBox(height: screenWidth * 0.07),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    HoverButton(context, Colors.blue, Icons.table_chart_sharp,
-                        () {
-                      _navigateToPage(context, Colors.blue);
-                    }),
-                    SizedBox(width: screenWidth * 0.07),
-                    HoverButton(
-                        context, Colors.yellow, Icons.person_add_alt_rounded,
-                        () {
-                      _navigateToPage(context, Colors.yellow);
-                    }),
-                  ],
-                ),
-              ],
+    return WillPopScope(
+      onWillPop: () async {
+        return backButton(context);
+      },
+      child: Scaffold(
+        appBar: CustomAppBar(userDto: widget.userDto),
+        drawer: AppDrawer(userDto: widget.userDto),
+        body: Stack(
+          children: [
+            Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      HoverButton(context, Colors.red, Icons.groups_outlined,
+                          () {
+                        _navigateToPage(context, Colors.red);
+                      }),
+                      SizedBox(width: screenWidth * 0.07),
+                      HoverButton(context, Colors.lightGreen, Icons.add_card,
+                          () {
+                        _navigateToPage(context, Colors.lightGreen);
+                      }),
+                    ],
+                  ),
+                  SizedBox(height: screenWidth * 0.07),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      HoverButton(context, Colors.blue, Icons.table_chart_sharp,
+                          () {
+                        _navigateToPage(context, Colors.blue);
+                      }),
+                      SizedBox(width: screenWidth * 0.07),
+                      HoverButton(
+                          context, Colors.yellow, Icons.person_add_alt_rounded,
+                          () {
+                        _navigateToPage(context, Colors.yellow);
+                      }),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-          Positioned(
-            bottom: bottomPadding,
-            right: bottomPadding,
-            child: HoverButton(context, Colors.orange, Icons.exit_to_app, () {
-              _navigateToPage(context, Colors.orange);
-            }, buttonRadius),
-          ),
-        ],
+            Positioned(
+              bottom: bottomPadding,
+              right: bottomPadding,
+              child: HoverButton(context, Colors.orange, Icons.exit_to_app, () {
+                _navigateToPage(context, Colors.orange);
+              }, buttonRadius),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -103,7 +112,6 @@ class _Home1PageState extends State<Home1Page> {
 
     Navigator.of(context).pushReplacement(PageTransition(
       type: PageTransitionType.fade,
-      // Выберите нужный вам тип анимации (например, fade)
       child: page,
     ));
   }
@@ -161,20 +169,3 @@ class _HoverButtonState extends State<HoverButton> {
     );
   }
 }
-
-// class MyCustomRoute<T> extends MaterialPageRoute<T> {
-//   MyCustomRoute({WidgetBuilder? builder, RouteSettings? settings})
-//       : super(builder: builder!, settings: settings);
-//
-//   @override
-//   Widget buildTransitions(BuildContext context, Animation<double> animation,
-//       Animation<double> secondaryAnimation, Widget child) {
-//     if (ModalRoute.of(context)?.isFirst ?? false) {
-//       // This is the initial route, no transition animation
-//       return child;
-//     } else {
-//       // For other routes, apply fade transition
-//       return FadeTransition(opacity: animation, child: child);
-//     }
-//   }
-// }

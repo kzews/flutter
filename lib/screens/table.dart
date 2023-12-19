@@ -5,6 +5,7 @@ import 'package:fluttersrc/appBar.dart';
 import 'package:http/http.dart' as http;
 
 import '../objects/userDto.dart';
+import '../services/backButton.dart';
 
 // void main() {
 //   runApp(const MyApp());
@@ -64,6 +65,8 @@ class _TablePageState extends State<TablePage> {
   List<Map<String, dynamic>> filteredItems = [];
   bool _sortAscending = true;
   int _sortColumnIndex = 0;
+  DateTime? currentBackPressTime;
+
   TextEditingController nameFilterController = TextEditingController();
   TextEditingController licenseTypeFilterController = TextEditingController();
   TextEditingController licenseNumberFilterController = TextEditingController();
@@ -222,285 +225,293 @@ class _TablePageState extends State<TablePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: CustomAppBar(userDto: widget.userDto),
-      drawer: AppDrawer(userDto: widget.userDto),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  TextField(
-                    controller: nameFilterController,
-                    onChanged: (value) {
-                      _filterItems();
-                    },
-                    decoration: const InputDecoration(
-                      labelText: 'Фильтр по названию',
+    return WillPopScope(
+      onWillPop: () async {
+        return backButton(context);
+      },
+      child: Scaffold(
+        appBar: CustomAppBar(userDto: widget.userDto),
+        drawer: AppDrawer(userDto: widget.userDto),
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: nameFilterController,
+                      onChanged: (value) {
+                        _filterItems();
+                      },
+                      decoration: const InputDecoration(
+                        labelText: 'Фильтр по названию',
+                      ),
                     ),
-                  ),
-                  TextField(
-                    controller: licenseTypeFilterController,
-                    onChanged: (value) {
-                      _filterItems();
-                    },
-                    decoration: const InputDecoration(
-                      labelText: 'Фильтр по типу лицензии',
+                    TextField(
+                      controller: licenseTypeFilterController,
+                      onChanged: (value) {
+                        _filterItems();
+                      },
+                      decoration: const InputDecoration(
+                        labelText: 'Фильтр по типу лицензии',
+                      ),
                     ),
-                  ),
-                  // TextField(
-                  //   controller: licenseNumberFilterController,
-                  //   onChanged: (value) {
-                  //     _filterItems();
-                  //   },
-                  //   decoration: const InputDecoration(
-                  //     labelText: 'Фильтр по номеру лицензии',
-                  //   ),
-                  // ),
-                ],
+                    // TextField(
+                    //   controller: licenseNumberFilterController,
+                    //   onChanged: (value) {
+                    //     _filterItems();
+                    //   },
+                    //   decoration: const InputDecoration(
+                    //     labelText: 'Фильтр по номеру лицензии',
+                    //   ),
+                    // ),
+                  ],
+                ),
               ),
-            ),
-            SingleChildScrollView(
-              scrollDirection: Axis.vertical,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  child: DataTable(
-                    border: TableBorder.all(
-                      width: 2.0,
-                      color: Colors.black45,
-                    ),
-                    // headingRowHeight: 200,
-                    columnSpacing: 1,
-                    sortAscending: _sortAscending,
-                    sortColumnIndex: _sortColumnIndex,
-                    columns: <DataColumn>[
-                      DataColumn(
-                        // label: VerticalTextCell('название'),
-                        label: const Icon(Icons.account_box),
-                        tooltip: 'Владелец',
-                        onSort: (columnIndex, ascending) {
-                          setState(() {
-                            _sortAscending = ascending;
-                            _sortColumnIndex = columnIndex;
-                            _sort(
-                                (item) => item['name'], columnIndex, ascending);
-                          });
-                        },
+              SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    child: DataTable(
+                      border: TableBorder.all(
+                        width: 2.0,
+                        color: Colors.black45,
                       ),
-                      // DataColumn(
-                      //   // label: VerticalTextCell('дата\nдобавления'),
-                      //   label: const Icon(Icons.access_alarm),
-                      //   tooltip: 'дата\nдобавления',
-                      //   onSort: (columnIndex, ascending) {
-                      //     setState(() {
-                      //       _sortAscending = ascending;
-                      //       _sortColumnIndex = columnIndex;
-                      //       _sort((item) => item['date_added'], columnIndex,
-                      //           ascending);
-                      //     });
-                      //   },
-                      // ),
-                      DataColumn(
-                        // label: VerticalTextCell('срок'),
-                        label: const Center(child: Icon(Icons.date_range)),
-                        tooltip: 'срок',
-                        onSort: (columnIndex, ascending) {
-                          setState(() {
-                            _sortAscending = ascending;
-                            _sortColumnIndex = columnIndex;
-                            _sort((item) => item['expiry_date'], columnIndex,
-                                ascending);
-                          });
-                        },
-                      ),
-                      DataColumn(
-                        // label: VerticalTextCell('пропускная\nспособность'),
-                        label: const Icon(
-                          Icons.network_check,
+                      // headingRowHeight: 200,
+                      columnSpacing: 1,
+                      sortAscending: _sortAscending,
+                      sortColumnIndex: _sortColumnIndex,
+                      columns: <DataColumn>[
+                        DataColumn(
+                          // label: VerticalTextCell('название'),
+                          label: const Icon(Icons.account_box),
+                          tooltip: 'Владелец',
+                          onSort: (columnIndex, ascending) {
+                            setState(() {
+                              _sortAscending = ascending;
+                              _sortColumnIndex = columnIndex;
+                              _sort((item) => item['name'], columnIndex,
+                                  ascending);
+                            });
+                          },
                         ),
-                        tooltip: 'пропускная\nспособность',
-                        onSort: (columnIndex, ascending) {
-                          setState(() {
-                            _sortAscending = ascending;
-                            _sortColumnIndex = columnIndex;
-                            _sort((item) => item['max_bandwidth'], columnIndex,
-                                ascending);
-                          });
-                        },
-                      ),
-                      DataColumn(
-                        // label: VerticalTextCell('макс кол-во\nпользователей'),
-                        label: const Icon(
-                          Icons.people,
+                        // DataColumn(
+                        //   // label: VerticalTextCell('дата\nдобавления'),
+                        //   label: const Icon(Icons.access_alarm),
+                        //   tooltip: 'дата\nдобавления',
+                        //   onSort: (columnIndex, ascending) {
+                        //     setState(() {
+                        //       _sortAscending = ascending;
+                        //       _sortColumnIndex = columnIndex;
+                        //       _sort((item) => item['date_added'], columnIndex,
+                        //           ascending);
+                        //     });
+                        //   },
+                        // ),
+                        DataColumn(
+                          // label: VerticalTextCell('срок'),
+                          label: const Center(child: Icon(Icons.date_range)),
+                          tooltip: 'срок',
+                          onSort: (columnIndex, ascending) {
+                            setState(() {
+                              _sortAscending = ascending;
+                              _sortColumnIndex = columnIndex;
+                              _sort((item) => item['expiry_date'], columnIndex,
+                                  ascending);
+                            });
+                          },
                         ),
-                        tooltip: 'макс кол-во\nпользователей',
-                        onSort: (columnIndex, ascending) {
-                          setState(() {
-                            _sortAscending = ascending;
-                            _sortColumnIndex = columnIndex;
-                            _sort((item) => item['max_users'], columnIndex,
-                                ascending);
-                          });
-                        },
-                      ),
-                      DataColumn(
-                        // label: VerticalTextCell('макс кол-во\nсессий'),
-                        label: const Icon(Icons.account_tree),
-                        tooltip: 'макс кол-во сессий',
-                        onSort: (columnIndex, ascending) {
-                          setState(() {
-                            _sortAscending = ascending;
-                            _sortColumnIndex = columnIndex;
-                            _sort((item) => item['max_vpn_sessions'],
-                                columnIndex, ascending);
-                          });
-                        },
-                      ),
-                      DataColumn(
-                        // label: VerticalTextCell('тип лицензии'),
-                        label: const Icon(Icons.format_list_numbered_rounded),
-                        tooltip: 'тип лицензии',
-                        onSort: (columnIndex, ascending) {
-                          setState(() {
-                            _sortAscending = ascending;
-                            _sortColumnIndex = columnIndex;
-                            _sort((item) => item['license_type'], columnIndex,
-                                ascending);
-                          });
-                        },
-                      ),
-                      // DataColumn(
-                      //   label: const Icon(Icons.numbers),
-                      //   tooltip: 'номер лицензии',
-                      //   onSort: (columnIndex, ascending) {
-                      //     setState(() {
-                      //       _sortAscending = ascending;
-                      //       _sortColumnIndex = columnIndex;
-                      //       _sort((item) => item['license_number'], columnIndex,
-                      //           ascending);
-                      //     });
-                      //   },
-                      // ),
-                      const DataColumn(
-                        // label: VerticalTextCell('Действия'),
-                        label: Icon(
-                          Icons.delete_outline_outlined,
-                          color: Colors.red,
+                        DataColumn(
+                          // label: VerticalTextCell('пропускная\nспособность'),
+                          label: const Icon(
+                            Icons.network_check,
+                          ),
+                          tooltip: 'пропускная\nспособность',
+                          onSort: (columnIndex, ascending) {
+                            setState(() {
+                              _sortAscending = ascending;
+                              _sortColumnIndex = columnIndex;
+                              _sort((item) => item['max_bandwidth'],
+                                  columnIndex, ascending);
+                            });
+                          },
                         ),
-                      ),
-                    ],
-                    rows: (nameFilterController.text.isEmpty &&
-                            licenseTypeFilterController.text.isEmpty &&
-                            licenseNumberFilterController.text.isEmpty)
-                        ? items.map(
-                            (item) {
-                              return DataRow(
-                                cells: <DataCell>[
-                                  // DataCell(Text(item['id'].toString())),
-                                  DataCell(
-                                    Center(
-                                      child: Text(item['name']),
+                        DataColumn(
+                          // label: VerticalTextCell('макс кол-во\nпользователей'),
+                          label: const Icon(
+                            Icons.people,
+                          ),
+                          tooltip: 'макс кол-во\nпользователей',
+                          onSort: (columnIndex, ascending) {
+                            setState(() {
+                              _sortAscending = ascending;
+                              _sortColumnIndex = columnIndex;
+                              _sort((item) => item['max_users'], columnIndex,
+                                  ascending);
+                            });
+                          },
+                        ),
+                        DataColumn(
+                          // label: VerticalTextCell('макс кол-во\nсессий'),
+                          label: const Icon(Icons.account_tree),
+                          tooltip: 'макс кол-во сессий',
+                          onSort: (columnIndex, ascending) {
+                            setState(() {
+                              _sortAscending = ascending;
+                              _sortColumnIndex = columnIndex;
+                              _sort((item) => item['max_vpn_sessions'],
+                                  columnIndex, ascending);
+                            });
+                          },
+                        ),
+                        DataColumn(
+                          // label: VerticalTextCell('тип лицензии'),
+                          label: const Icon(Icons.format_list_numbered_rounded),
+                          tooltip: 'тип лицензии',
+                          onSort: (columnIndex, ascending) {
+                            setState(() {
+                              _sortAscending = ascending;
+                              _sortColumnIndex = columnIndex;
+                              _sort((item) => item['license_type'], columnIndex,
+                                  ascending);
+                            });
+                          },
+                        ),
+                        // DataColumn(
+                        //   label: const Icon(Icons.numbers),
+                        //   tooltip: 'номер лицензии',
+                        //   onSort: (columnIndex, ascending) {
+                        //     setState(() {
+                        //       _sortAscending = ascending;
+                        //       _sortColumnIndex = columnIndex;
+                        //       _sort((item) => item['license_number'], columnIndex,
+                        //           ascending);
+                        //     });
+                        //   },
+                        // ),
+                        const DataColumn(
+                          // label: VerticalTextCell('Действия'),
+                          label: Icon(
+                            Icons.delete_outline_outlined,
+                            color: Colors.red,
+                          ),
+                        ),
+                      ],
+                      rows: (nameFilterController.text.isEmpty &&
+                              licenseTypeFilterController.text.isEmpty &&
+                              licenseNumberFilterController.text.isEmpty)
+                          ? items.map(
+                              (item) {
+                                return DataRow(
+                                  cells: <DataCell>[
+                                    // DataCell(Text(item['id'].toString())),
+                                    DataCell(
+                                      Center(
+                                        child: Text(item['name']),
+                                      ),
                                     ),
-                                  ),
-                                  // DataCell(Text(item['date_added'].toString())),
-                                  DataCell(
-                                    Text(
-                                      item['expiry_date'].toString().isEmpty
-                                          ? 'бессрочно'
-                                          : item['expiry_date'].toString(),
+                                    // DataCell(Text(item['date_added'].toString())),
+                                    DataCell(
+                                      Text(
+                                        item['expiry_date'].toString().isEmpty
+                                            ? 'бессрочно'
+                                            : item['expiry_date'].toString(),
+                                      ),
                                     ),
-                                  ),
 
-                                  DataCell(
-                                    Center(
-                                      child: Text(
-                                        item['max_bandwidth'] == '0'
+                                    DataCell(
+                                      Center(
+                                        child: Text(
+                                          item['max_bandwidth'] == '0'
+                                              ? '∞' // or any other symbol or text
+                                              : item['max_bandwidth']
+                                                  .toString(),
+                                        ),
+                                      ),
+                                    ),
+                                    DataCell(
+                                      Text(
+                                        item['max_users'] == 0
                                             ? '∞' // or any other symbol or text
-                                            : item['max_bandwidth'].toString(),
+                                            : item['max_users'].toString(),
                                       ),
                                     ),
-                                  ),
-                                  DataCell(
-                                    Text(
-                                      item['max_users'] == 0
-                                          ? '∞' // or any other symbol or text
-                                          : item['max_users'].toString(),
+                                    DataCell(
+                                      Text(
+                                        item['max_vpn_sessions'] == 0
+                                            ? '∞' // or any other symbol or text
+                                            : item['max_vpn_sessions']
+                                                .toString(),
+                                      ),
                                     ),
-                                  ),
-                                  DataCell(
-                                    Text(
-                                      item['max_vpn_sessions'] == 0
-                                          ? '∞' // or any other symbol or text
-                                          : item['max_vpn_sessions'].toString(),
-                                    ),
-                                  ),
 
-                                  DataCell(
-                                    Text(
-                                      item['license_type'].toString(),
-                                    ),
-                                  ),
-                                  // DataCell(
-                                  //     Text(item['license_number'].toString())),
-                                  DataCell(
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        _deleteItem(item['id']);
-                                      },
-                                      child: const Icon(
-                                        Icons.delete,
-                                        color: Colors.white, // цвет иконки
+                                    DataCell(
+                                      Text(
+                                        item['license_type'].toString(),
                                       ),
                                     ),
-                                  ),
-                                ],
-                              );
-                            },
-                          ).toList()
-                        : filteredItems.map(
-                            (item) {
-                              return DataRow(
-                                cells: <DataCell>[
-                                  DataCell(
-                                    Text(item['name']),
-                                  ),
-                                  // DataCell(Text(item['date_added'].toString())),
-                                  DataCell(
-                                      Text(item['expiry_date'].toString())),
-                                  DataCell(
-                                      Text(item['max_bandwidth'].toString())),
-                                  DataCell(Text(item['max_users'].toString())),
-                                  DataCell(Text(
-                                      item['max_vpn_sessions'].toString())),
-                                  DataCell(
-                                      Text(item['license_type'].toString())),
-                                  // DataCell(
-                                  //     Text(item['license_number'].toString())),
-                                  // DataCell(Text(item['license_key'].toString())),
-                                  DataCell(
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        _deleteItem(item['id']);
-                                      },
-                                      child: const Icon(
-                                        Icons.delete,
-                                        color: Colors.white, // цвет иконки
+                                    // DataCell(
+                                    //     Text(item['license_number'].toString())),
+                                    DataCell(
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          _deleteItem(item['id']);
+                                        },
+                                        child: const Icon(
+                                          Icons.delete,
+                                          color: Colors.white, // цвет иконки
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ],
-                              );
-                            },
-                          ).toList(),
+                                  ],
+                                );
+                              },
+                            ).toList()
+                          : filteredItems.map(
+                              (item) {
+                                return DataRow(
+                                  cells: <DataCell>[
+                                    DataCell(
+                                      Text(item['name']),
+                                    ),
+                                    // DataCell(Text(item['date_added'].toString())),
+                                    DataCell(
+                                        Text(item['expiry_date'].toString())),
+                                    DataCell(
+                                        Text(item['max_bandwidth'].toString())),
+                                    DataCell(
+                                        Text(item['max_users'].toString())),
+                                    DataCell(Text(
+                                        item['max_vpn_sessions'].toString())),
+                                    DataCell(
+                                        Text(item['license_type'].toString())),
+                                    // DataCell(
+                                    //     Text(item['license_number'].toString())),
+                                    // DataCell(Text(item['license_key'].toString())),
+                                    DataCell(
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          _deleteItem(item['id']);
+                                        },
+                                        child: const Icon(
+                                          Icons.delete,
+                                          color: Colors.white, // цвет иконки
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ).toList(),
+                    ),
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

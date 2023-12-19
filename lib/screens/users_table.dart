@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttersrc/appBar.dart';
+import 'package:fluttersrc/services/backButton.dart';
 import 'package:http/http.dart' as http;
 
 import '../objects/userDto.dart';
@@ -50,6 +51,7 @@ class _UsersPageState extends State<UsersPage> {
   TextEditingController loginController = TextEditingController();
   TextEditingController passwordFilterController = TextEditingController();
   TextEditingController roleFilterController = TextEditingController();
+  DateTime? currentBackPressTime;
 
   @override
   void initState() {
@@ -305,235 +307,240 @@ class _UsersPageState extends State<UsersPage> {
     final Object? userDto = ModalRoute.of(context)!.settings.arguments;
     // double bottomPadding =
     //     MediaQuery.of(context).size.height * 0.05; // 5% высоты экрана
-    return Scaffold(
-      appBar: CustomAppBar(userDto: widget.userDto),
-      drawer: AppDrawer(userDto: widget.userDto),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                children: [
-                  TextField(
-                    controller: loginController,
-                    onChanged: (value) {
-                      _filterItems();
-                    },
-                    decoration: const InputDecoration(
-                      labelText: 'Фильтр по логину',
+    return WillPopScope(
+      onWillPop: () async {
+        return backButton(context);
+      },
+      child: Scaffold(
+        appBar: CustomAppBar(userDto: widget.userDto),
+        drawer: AppDrawer(userDto: widget.userDto),
+        body: SingleChildScrollView(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: loginController,
+                      onChanged: (value) {
+                        _filterItems();
+                      },
+                      decoration: const InputDecoration(
+                        labelText: 'Фильтр по логину',
+                      ),
                     ),
-                  ),
-                  // TextField(
-                  //   controller: passwordFilterController,
-                  //   onChanged: (value) {
-                  //     _filterItems();
-                  //   },
-                  //   decoration: const InputDecoration(
-                  //     labelText: 'Фильтр по паролю',
-                  //   ),
-                  // ),
-                  TextField(
-                    controller: roleFilterController,
-                    onChanged: (value) {
-                      _filterItems();
-                    },
-                    decoration: const InputDecoration(
-                      labelText: 'Фильтр по роли',
+                    // TextField(
+                    //   controller: passwordFilterController,
+                    //   onChanged: (value) {
+                    //     _filterItems();
+                    //   },
+                    //   decoration: const InputDecoration(
+                    //     labelText: 'Фильтр по паролю',
+                    //   ),
+                    // ),
+                    TextField(
+                      controller: roleFilterController,
+                      onChanged: (value) {
+                        _filterItems();
+                      },
+                      decoration: const InputDecoration(
+                        labelText: 'Фильтр по роли',
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            SingleChildScrollView(
-              scrollDirection: Axis.vertical,
-              child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: SizedBox(
-                  width: MediaQuery.of(context).size.width,
-                  child: DataTable(
-                    border: TableBorder.all(
-                      width: 2.0,
-                      color: Colors.black45,
+              SingleChildScrollView(
+                scrollDirection: Axis.vertical,
+                child: SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: SizedBox(
+                    width: MediaQuery.of(context).size.width,
+                    child: DataTable(
+                      border: TableBorder.all(
+                        width: 2.0,
+                        color: Colors.black45,
+                      ),
+                      // headingRowHeight: 200,
+                      columnSpacing: 1,
+                      sortAscending: _sortAscending,
+                      sortColumnIndex: _sortColumnIndex,
+                      columns: <DataColumn>[
+                        DataColumn(
+                          // label: VerticalTextCell('название'),
+                          label: const Icon(Icons.person),
+                          tooltip: 'логин',
+                          onSort: (columnIndex, ascending) {
+                            setState(() {
+                              _sortAscending = ascending;
+                              _sortColumnIndex = columnIndex;
+                              _sort((item) => item['login'], columnIndex,
+                                  ascending);
+                            });
+                          },
+                        ),
+                        // DataColumn(
+                        //   // label: VerticalTextCell('дата\nдобавления'),
+                        //   label: const Icon(Icons.personal_injury_rounded),
+                        //   tooltip: 'пароль',
+                        //   onSort: (columnIndex, ascending) {
+                        //     setState(() {
+                        //       _sortAscending = ascending;
+                        //       _sortColumnIndex = columnIndex;
+                        //       _sort((item) => item['password'], columnIndex,
+                        //           ascending);
+                        //     });
+                        //   },
+                        // ),
+                        DataColumn(
+                          // label: VerticalTextCell('срок'),
+                          label: const Icon(Icons.person_search_rounded),
+                          tooltip: 'роль',
+                          onSort: (columnIndex, ascending) {
+                            setState(() {
+                              _sortAscending = ascending;
+                              _sortColumnIndex = columnIndex;
+                              _sort((item) => item['role'], columnIndex,
+                                  ascending);
+                            });
+                          },
+                        ),
+                        const DataColumn(
+                          // label: VerticalTextCell('Действия'),
+                          label: Icon(
+                            Icons.delete_outline_outlined,
+                            color: Colors.red,
+                          ),
+                        ),
+                        const DataColumn(
+                          // label: VerticalTextCell('Действия'),
+                          label: Icon(
+                            Icons.edit,
+                            color: Colors.red,
+                          ),
+                        ),
+                      ],
+                      rows: (loginController.text.isEmpty &&
+                              passwordFilterController.text.isEmpty &&
+                              roleFilterController.text.isEmpty)
+                          ? items.map(
+                              (item) {
+                                return DataRow(
+                                  cells: <DataCell>[
+                                    // DataCell(Text(item['id'].toString())),
+                                    // DataCell(
+                                    //   TextFormField(
+                                    //     initialValue: item['login'], // Устанавливаем начальное значение поля
+                                    //     onChanged: (newValue) {
+                                    //       // Обработка изменений в поле login
+                                    //       item['login'] = newValue;// Обновляем значение в вашем источнике данных
+                                    //     },
+                                    //
+                                    //   ),
+                                    // ),
+                                    DataCell(Text(item['login'].toString())),
+                                    // DataCell(Text(item['password'].toString())),
+                                    DataCell(Text(item['role'].toString())),
+                                    DataCell(
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          _deleteItem(item['id'], userDto);
+                                        },
+                                        child: const Icon(
+                                          Icons.delete,
+                                          color: Colors.white, // цвет иконки
+                                        ),
+                                      ),
+                                    ),
+
+                                    DataCell(
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          _showEditDialog(item);
+                                        },
+                                        child: const Icon(
+                                          Icons.edit,
+                                          color: Colors.white, // цвет иконки
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ).toList()
+                          : filteredItems.map(
+                              (item) {
+                                return DataRow(
+                                  cells: <DataCell>[
+                                    // DataCell(
+                                    //   TextFormField(
+                                    //     initialValue: item['login'], // Устанавливаем начальное значение поля
+                                    //     onChanged: (newValue) {
+                                    //       // Обработка изменений в поле login
+                                    //       item['login'] = newValue;// Обновляем значение в вашем источнике данных
+                                    //     },
+                                    //
+                                    //   ),
+                                    // ),
+                                    DataCell(Text(item['login'].toString())),
+                                    // DataCell(Text(item['password'].toString())),
+                                    DataCell(Text(item['role'].toString())),
+
+                                    // DataCell(Text(item['license_key'].toString())),
+                                    DataCell(
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          _deleteItem(item['id'], userDto);
+                                        },
+                                        child: const Icon(
+                                          Icons.delete,
+                                          color: Colors.white, // цвет иконки
+                                        ),
+                                      ),
+                                    ),
+                                    DataCell(
+                                      ElevatedButton(
+                                        onPressed: () {
+                                          _showEditDialog(item);
+                                        },
+                                        child: const Icon(
+                                          Icons.edit,
+                                          color: Colors.white, // цвет иконки
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ).toList(),
                     ),
-                    // headingRowHeight: 200,
-                    columnSpacing: 1,
-                    sortAscending: _sortAscending,
-                    sortColumnIndex: _sortColumnIndex,
-                    columns: <DataColumn>[
-                      DataColumn(
-                        // label: VerticalTextCell('название'),
-                        label: const Icon(Icons.person),
-                        tooltip: 'логин',
-                        onSort: (columnIndex, ascending) {
-                          setState(() {
-                            _sortAscending = ascending;
-                            _sortColumnIndex = columnIndex;
-                            _sort((item) => item['login'], columnIndex,
-                                ascending);
-                          });
-                        },
-                      ),
-                      DataColumn(
-                        // label: VerticalTextCell('дата\nдобавления'),
-                        label: const Icon(Icons.personal_injury_rounded),
-                        tooltip: 'пароль',
-                        onSort: (columnIndex, ascending) {
-                          setState(() {
-                            _sortAscending = ascending;
-                            _sortColumnIndex = columnIndex;
-                            _sort((item) => item['password'], columnIndex,
-                                ascending);
-                          });
-                        },
-                      ),
-                      DataColumn(
-                        // label: VerticalTextCell('срок'),
-                        label: const Icon(Icons.person_search_rounded),
-                        tooltip: 'роль',
-                        onSort: (columnIndex, ascending) {
-                          setState(() {
-                            _sortAscending = ascending;
-                            _sortColumnIndex = columnIndex;
-                            _sort(
-                                (item) => item['role'], columnIndex, ascending);
-                          });
-                        },
-                      ),
-                      const DataColumn(
-                        // label: VerticalTextCell('Действия'),
-                        label: Icon(
-                          Icons.delete_outline_outlined,
-                          color: Colors.red,
-                        ),
-                      ),
-                      const DataColumn(
-                        // label: VerticalTextCell('Действия'),
-                        label: Icon(
-                          Icons.edit,
-                          color: Colors.red,
-                        ),
-                      ),
-                    ],
-                    rows: (loginController.text.isEmpty &&
-                            passwordFilterController.text.isEmpty &&
-                            roleFilterController.text.isEmpty)
-                        ? items.map(
-                            (item) {
-                              return DataRow(
-                                cells: <DataCell>[
-                                  // DataCell(Text(item['id'].toString())),
-                                  // DataCell(
-                                  //   TextFormField(
-                                  //     initialValue: item['login'], // Устанавливаем начальное значение поля
-                                  //     onChanged: (newValue) {
-                                  //       // Обработка изменений в поле login
-                                  //       item['login'] = newValue;// Обновляем значение в вашем источнике данных
-                                  //     },
-                                  //
-                                  //   ),
-                                  // ),
-                                  DataCell(Text(item['login'].toString())),
-                                  DataCell(Text(item['password'].toString())),
-                                  DataCell(Text(item['role'].toString())),
-                                  DataCell(
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        _deleteItem(item['id'], userDto);
-                                      },
-                                      child: const Icon(
-                                        Icons.delete,
-                                        color: Colors.white, // цвет иконки
-                                      ),
-                                    ),
-                                  ),
-
-                                  DataCell(
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        _showEditDialog(item);
-                                      },
-                                      child: const Icon(
-                                        Icons.edit,
-                                        color: Colors.white, // цвет иконки
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              );
-                            },
-                          ).toList()
-                        : filteredItems.map(
-                            (item) {
-                              return DataRow(
-                                cells: <DataCell>[
-                                  // DataCell(
-                                  //   TextFormField(
-                                  //     initialValue: item['login'], // Устанавливаем начальное значение поля
-                                  //     onChanged: (newValue) {
-                                  //       // Обработка изменений в поле login
-                                  //       item['login'] = newValue;// Обновляем значение в вашем источнике данных
-                                  //     },
-                                  //
-                                  //   ),
-                                  // ),
-                                  DataCell(Text(item['login'].toString())),
-                                  DataCell(Text(item['password'].toString())),
-                                  DataCell(Text(item['role'].toString())),
-
-                                  // DataCell(Text(item['license_key'].toString())),
-                                  DataCell(
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        _deleteItem(item['id'], userDto);
-                                      },
-                                      child: const Icon(
-                                        Icons.delete,
-                                        color: Colors.white, // цвет иконки
-                                      ),
-                                    ),
-                                  ),
-                                  DataCell(
-                                    ElevatedButton(
-                                      onPressed: () {
-                                        _showEditDialog(item);
-                                      },
-                                      child: const Icon(
-                                        Icons.edit,
-                                        color: Colors.white, // цвет иконки
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              );
-                            },
-                          ).toList(),
                   ),
                 ),
               ),
-            ),
-            // Positioned(
-            //   bottom: bottomPadding,
-            //   right: bottomPadding,
-            //   child: FloatingActionButton(
-            //     onPressed: () {
-            //       // Обработка нажатия кнопки добавления пользователя
-            //       // Например, откройте новый экран для добавления пользователя
-            //       Navigator.push(
-            //         context,
-            //         MaterialPageRoute(
-            //           builder: (context) => RegisterPage(userDto: widget.userDto),
-            //         ),
-            //       );
-            //     },
-            //     child: Icon(Icons.person_add_alt_rounded),
-            //   ),
-            // ),
-          ],
+              // Positioned(
+              //   bottom: bottomPadding,
+              //   right: bottomPadding,
+              //   child: FloatingActionButton(
+              //     onPressed: () {
+              //       // Обработка нажатия кнопки добавления пользователя
+              //       // Например, откройте новый экран для добавления пользователя
+              //       Navigator.push(
+              //         context,
+              //         MaterialPageRoute(
+              //           builder: (context) => RegisterPage(userDto: widget.userDto),
+              //         ),
+              //       );
+              //     },
+              //     child: Icon(Icons.person_add_alt_rounded),
+              //   ),
+              // ),
+            ],
+          ),
         ),
-      ),
 
-      ///////////////
+        ///////////////
+      ),
     );
   }
 }
