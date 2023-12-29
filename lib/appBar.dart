@@ -13,6 +13,8 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   const CustomAppBar({Key? key, required this.userDto}) : super(key: key);
 
+
+
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
 
@@ -49,6 +51,86 @@ class AppDrawer extends StatelessWidget {
   final UserDto userDto;
 
   const AppDrawer({super.key, required this.userDto});
+
+
+
+  void _showUserDetailsDialog(BuildContext context, UserDto userDto) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Данные о пользователе'),
+          content: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Логин: ${userDto.login}'),
+              Text('Роль: ${userDto.role}'),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _showEditDialog(context);
+              },
+              child: Text('Изменить'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showEditDialog(BuildContext context) {
+    String newLogin = '';
+    String newPassword = '';
+    String confirmPassword = '';
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Изменить данные'),
+          content: Column(
+            children: [
+              TextField(
+                onChanged: (value) {
+                  newLogin = value;
+                },
+                decoration: InputDecoration(labelText: 'Новый логин'),
+              ),
+              TextField(
+                onChanged: (value) {
+                  newPassword = value;
+                },
+                obscureText: true,
+                decoration: InputDecoration(labelText: 'Новый пароль'),
+              ),
+              TextField(
+                onChanged: (value) {
+                  confirmPassword = value;
+                },
+                obscureText: true,
+                decoration: InputDecoration(labelText: 'Подтвердите новый пароль'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                // Здесь вы можете обработать введенные данные и выполнить необходимые действия
+                // например, отправить запрос на изменение данных пользователя
+                // и закрыть диалоговое окно
+                Navigator.pop(context);
+              },
+              child: Text('Сохранить'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -115,21 +197,18 @@ class AppDrawer extends StatelessWidget {
           ),
           ListTile(
             title: const Text('Данные о пользователе'),
-
             onTap: () {
-              Navigator.of(context).pushReplacement(PageTransition(
-                type: PageTransitionType.leftToRight,
-                child: HomePage(userDto: userDto),
-              ));
+              _showUserDetailsDialog(context, userDto);
             },
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text('Логин: ${userDto.login}'),
-                Text('Пароль: ${userDto.password}'),
+                Text('Роль: ${userDto.role}'),
               ],
             ),
           ),
+
         ],
       ),
     );

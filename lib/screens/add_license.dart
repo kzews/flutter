@@ -148,6 +148,18 @@ class _HomePageState extends State<HomePage> {
                         value: 2,
                         child: Text('Мост'),
                       ),
+                      DropdownMenuItem(
+                        value: 4,
+                        child: Text('Сервер с кодом подтверждения'),
+                      ),
+                      DropdownMenuItem(
+                        value: 6,
+                        child: Text('Клиент с кодом подтверждения'),
+                      ),
+                      DropdownMenuItem(
+                        value: 5,
+                        child: Text('Мост с кодом подтверждения'),
+                      ),
                     ],
                     onChanged: (value) {
                       // Обработка выбора значения

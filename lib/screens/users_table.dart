@@ -133,7 +133,7 @@ class _UsersPageState extends State<UsersPage> {
   }
 
   Future<void> _updateUser(
-      int itemId, String login, String password, String role) async {
+      int itemId, String login, String role) async {
     final response = await http.put(
       Uri.parse('http://192.168.202.199:5000/api/users/$itemId'),
       headers: <String, String>{
@@ -141,7 +141,7 @@ class _UsersPageState extends State<UsersPage> {
       },
       body: jsonEncode(<String, String>{
         'login': login,
-        'password': password,
+        // 'password': password,
         'role': role,
       }),
     );
@@ -249,8 +249,8 @@ class _UsersPageState extends State<UsersPage> {
   Future<void> _showEditDialog(Map<String, dynamic> item) async {
     TextEditingController loginController =
         TextEditingController(text: item['login']);
-    TextEditingController passwordController =
-        TextEditingController(text: item['password']);
+    // TextEditingController passwordController =
+    //     TextEditingController(text: item['password']);
     TextEditingController roleController =
         TextEditingController(text: item['role']);
 
@@ -265,10 +265,10 @@ class _UsersPageState extends State<UsersPage> {
                 controller: loginController,
                 decoration: const InputDecoration(labelText: 'Логин'),
               ),
-              TextField(
-                controller: passwordController,
-                decoration: const InputDecoration(labelText: 'Пароль'),
-              ),
+              // TextField(
+              //   controller: passwordController,
+              //   decoration: const InputDecoration(labelText: 'Пароль'),
+              // ),
               TextField(
                 controller: roleController,
                 decoration: const InputDecoration(labelText: 'Роль'),
@@ -284,8 +284,7 @@ class _UsersPageState extends State<UsersPage> {
             ),
             TextButton(
               onPressed: () {
-                _updateUser(item['id'], loginController.text,
-                    passwordController.text, roleController.text);
+                _updateUser(item['id'], loginController.text, roleController.text);
                 fetchItems(widget.userDto);
                 Navigator.of(context).pop();
               },

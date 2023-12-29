@@ -47,6 +47,14 @@ class _RegisterPageState extends State<RegisterPage> {
           _passwordTypeController.clear();
           selectedRole = null;
         });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            backgroundColor: Colors.green,
+            content: Text('Пользователь успешно добавлен'),
+            duration:
+            Duration(seconds: 2), // Длительность отображения Snackbar
+          ),
+        );
       } else {
         if (response.statusCode == 400) {
           print(response.statusCode);

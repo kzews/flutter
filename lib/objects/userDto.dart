@@ -4,18 +4,16 @@ part 'userDto.g.dart';
 
 @JsonSerializable()
 class UserDto {
+  int? id;
   String? login;
-
+  String? role;
   String? password;
-
-
 
   UserDto({
     required this.login,
-
+    this.role,
     this.password,
-
-
+    this.id,
   });
 
   factory UserDto.fromJson(Map<String, dynamic> json) =>

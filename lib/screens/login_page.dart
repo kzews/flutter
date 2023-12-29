@@ -73,7 +73,6 @@ class _LoginPageState extends State<LoginPage> {
                 TextField(
                   controller: _passwordController,
                   obscureText: !_isPasswordVisible,
-                  // Используйте состояние для переключения видимости пароля
                   decoration: InputDecoration(
                     labelText: 'Пароль',
                     suffixIcon: IconButton(

@@ -8,7 +8,7 @@ import '../objects/userDto.dart';
 
 Future<UserDto> login(UserDto userDto) async {
   if (USE_FAKE_AUTH_API) {
-    return UserDto(login: 'kirill99', password: 'kirill99');
+    return UserDto(login: 'kirill99', role: 'admin', password: 'kirill99');
   }
   Dio dio = Dio();
 
@@ -21,6 +21,9 @@ Future<UserDto> login(UserDto userDto) async {
         responseType: ResponseType.plain,
       ),
     );
+    var userJson = jsonDecode(response.data);
+    userDto.role = userJson['role'];
+    userDto.id = userJson['id'];
     return UserDto.fromJson(jsonDecode(response.data));
   } on DioException catch (ex) {
     print(ex);
