@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:fluttersrc/screens/add_license.dart';
+import 'package:fluttersrc/screens/login_page.dart';
 import 'package:fluttersrc/screens/registration.dart';
 import 'package:fluttersrc/screens/table.dart';
 import 'package:fluttersrc/screens/test_page.dart';
 import 'package:fluttersrc/screens/users_table.dart';
+import 'package:fluttersrc/services/changeUser.dart';
 import 'package:page_transition/page_transition.dart';
 
 import 'objects/userDto.dart';
@@ -12,8 +14,6 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final UserDto userDto;
 
   const CustomAppBar({Key? key, required this.userDto}) : super(key: key);
-
-
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -42,6 +42,15 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             ));
           },
         ),
+        IconButton(
+          icon: const Icon(Icons.exit_to_app),
+          onPressed: () {
+            Navigator.of(context).pushReplacement(PageTransition(
+              type: PageTransitionType.leftToRight,
+              child: LoginPage(),
+            ));
+          },
+        ),
       ],
     );
   }
@@ -51,8 +60,6 @@ class AppDrawer extends StatelessWidget {
   final UserDto userDto;
 
   const AppDrawer({super.key, required this.userDto});
-
-
 
   void _showUserDetailsDialog(BuildContext context, UserDto userDto) {
     showDialog(
@@ -84,7 +91,7 @@ class AppDrawer extends StatelessWidget {
   void _showEditDialog(BuildContext context) {
     String newLogin = '';
     String newPassword = '';
-    String confirmPassword = '';
+    // String confirmPassword = '';
 
     showDialog(
       context: context,
@@ -106,22 +113,29 @@ class AppDrawer extends StatelessWidget {
                 obscureText: true,
                 decoration: InputDecoration(labelText: 'Новый пароль'),
               ),
-              TextField(
-                onChanged: (value) {
-                  confirmPassword = value;
-                },
-                obscureText: true,
-                decoration: InputDecoration(labelText: 'Подтвердите новый пароль'),
-              ),
+              //TODO: проверка правильного ввода нового пароля
+              // TextField(
+              //   onChanged: (value) {
+              //     confirmPassword = value;
+              //   },
+              //   obscureText: true,
+              //   decoration: InputDecoration(labelText: 'Подтвердите новый пароль'),
+              // ),
             ],
           ),
           actions: [
             TextButton(
               onPressed: () {
-                // Здесь вы можете обработать введенные данные и выполнить необходимые действия
-                // например, отправить запрос на изменение данных пользователя
-                // и закрыть диалоговое окно
+                changeUser(userDto.id, newLogin, newPassword);
+                print('changed user');
                 Navigator.pop(context);
+                Navigator.pushReplacement(
+                  context,
+                  PageTransition(
+                    type: PageTransitionType.leftToRight,
+                    child: LoginPage(),
+                  ),
+                );
               },
               child: Text('Сохранить'),
             ),
@@ -130,7 +144,6 @@ class AppDrawer extends StatelessWidget {
       },
     );
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -208,7 +221,15 @@ class AppDrawer extends StatelessWidget {
               ],
             ),
           ),
-
+          ListTile(
+            title: const Text('Выйти'),
+            onTap: () {
+              Navigator.of(context).pushReplacement(PageTransition(
+                type: PageTransitionType.leftToRight,
+                child: LoginPage(),
+              ));
+            },
+          ),
         ],
       ),
     );
