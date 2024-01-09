@@ -58,6 +58,146 @@ class _TablePageState extends State<TablePage> {
     fetchItems();
   }
 
+  Future<void> _showLicenseDetailsDialog(Map<String, dynamic> item) async {
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Данные лицензии'),
+          content: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Владелец: ${item['name']}'),
+              Text('Срок: ${item['expiry_date'].toString().isEmpty ? 'бессрочно' : item['expiry_date']}'),
+              Text('Пропускная способность: ${item['max_bandwidth'] == '0' ? 'без ограничений' : item['max_bandwidth']}'),
+              Text('Максимальное количество пользователей: ${item['max_users'] == 0 ? 'без ограничений' : item['max_users']}'),
+              Text('Максимальное количество сессий: ${item['max_vpn_sessions'] == 0 ? 'без ограничений' : item['max_vpn_sessions']}'),
+              Text('Тип лицензии: ${item['license_type'] == 1 ? 'сервер' : item['license_type'] == 3 ? 'клиент' : item['license_type'] == 2 ? 'мост' : item['license_type']}'),
+              Text('Номер лицензии: ${item['license_number']}'),
+              Text('Лицензия: ${item['license_key']}'),
+
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                _showActivationDialog(item);
+              },
+              child: const Text('Активировать лицензию'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _showActivationDialog(Map<String, dynamic> item) async {
+    String activationCode = '';
+
+    await showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Введите код активации'),
+          content: Column(
+            children: [
+              TextField(
+                onChanged: (value) {
+                  activationCode = value;
+                },
+                decoration: const InputDecoration(
+                  labelText: 'Код активации',
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                // Здесь вы можете отправить запрос на сервер
+                // с номером лицензии (item['license_key']) и кодом активации (activationCode)
+                // и обработать ответ, например, показать сообщение об успешной активации
+                _activateLicense(item['license_type'], item['license_number'], activationCode);
+
+                Navigator.of(context).pop();
+              },
+              child: const Text('Активировать'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('Отмена'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
+
+  Future<void> _activateLicense(int licenseType, int licenseNumber, String activationCode) async {
+    final response = await http.post(
+      Uri.parse('http://192.168.202.199:5000/api/createCode'),
+      headers: <String, String>{
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(<String, String>{
+        'install_key': activationCode,
+        // 'password': password,
+        'license_type': licenseType.toString(),
+        'license_number': licenseNumber.toString(),
+      }),
+    );
+
+
+    if (response.statusCode == 200) {
+      final Map<String, dynamic> responseData = json.decode(response.body);
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text('Успешно активировано'),
+            content: Text('Код активации: ${responseData['install_code']}'),
+            actions: [
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: const Text('OK'),
+              ),
+            ],
+          );
+        },
+      );
+      // ScaffoldMessenger.of(context).showSnackBar(
+      //   const SnackBar(
+      //     backgroundColor: Colors.green,
+      //     content: Text('Kод лицензии выслан'),
+      //     duration: Duration(seconds: 2), // Длительность отображения Snackbar
+      //   ),
+      // );
+    } else {
+      print(response.statusCode);
+      if (response.statusCode == 400) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            backgroundColor: Colors.red,
+            content: Text('Ошибка'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+
   Future<void> _deleteItem(int itemId) async {
     bool confirmDelete = await showDialog(
       context: context,
@@ -342,6 +482,11 @@ class _TablePageState extends State<TablePage> {
                           ? items.map(
                               (item) {
                                 return DataRow(
+                                  onSelectChanged: (selected) {
+                                    if (selected != null && selected) {
+                                      _showLicenseDetailsDialog(item);
+                                    }
+                                  },
                                   cells: <DataCell>[
                                     DataCell(
                                       Center(
@@ -403,6 +548,11 @@ class _TablePageState extends State<TablePage> {
                           : filteredItems.map(
                               (item) {
                                 return DataRow(
+                                  onSelectChanged: (selected) {
+                                    if (selected != null && selected) {
+                                      _showLicenseDetailsDialog(item);
+                                    }
+                                  },
                                   cells: <DataCell>[
                                     DataCell(
                                       Text(item['name']),
