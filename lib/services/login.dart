@@ -15,7 +15,7 @@ Future<UserDto> login(UserDto userDto) async {
 //TODO: проверка доступности сервера
 //   Проверка доступности сервера
   try {
-    await dio.get('http://192.168.202.199:5000/'); // Здесь можно использовать любой запрос к серверу
+    await dio.get('http://192.168.202.200:5000/'); // Здесь можно использовать любой запрос к серверу
   } catch (e) {
     // Обработка ошибки - сервер не доступен
     print('Сервер не доступен: $e');
@@ -25,7 +25,7 @@ Future<UserDto> login(UserDto userDto) async {
   // Если сервер доступен, отправляем запрос на аутентификацию
   try {
     var response = await dio.post(
-      'http://192.168.202.199:5000/api/login',
+      'http://192.168.202.200:5000/api/login',
       data: jsonEncode(userDto),
       options: Options(
         contentType: "application/json",

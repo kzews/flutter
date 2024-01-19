@@ -39,7 +39,7 @@ class MyApp extends StatelessWidget {
           backgroundColor: Colors.black, // Зеленый цвет для AppBar
         ),
         scaffoldBackgroundColor:
-            Colors.green.withOpacity(0.87), // Прозрачно-зеленый фон
+            Colors.white70.withOpacity(0.87), // Прозрачно-зеленый фон
       ),
       home: const LoginPage(),
     );

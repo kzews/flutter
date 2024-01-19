@@ -30,7 +30,7 @@ class _RegisterPageState extends State<RegisterPage> {
   Future<void> addItem() async {
     if (_formKey.currentState!.validate()) {
       final response = await http.post(
-        Uri.parse('http://192.168.202.199:5000/api/register'),
+        Uri.parse('http://192.168.202.200:5000/api/register'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
