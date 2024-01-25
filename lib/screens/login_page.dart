@@ -60,7 +60,9 @@ class _LoginPageState extends State<LoginPage> {
             backgroundColor: Colors.black,
           ),
           body: Padding(
-            padding: const EdgeInsets.all(16.0),
+            padding: EdgeInsets.symmetric(
+              horizontal: MediaQuery.of(context).size.width > 1500 ? 600 : 300,
+            ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -92,7 +94,7 @@ class _LoginPageState extends State<LoginPage> {
                 const SizedBox(height: 20),
                 ClipOval(
                   child: Material(
-                    color: Colors.green,
+                    color: Colors.blueAccent,
                     child: InkWell(
                       splashColor: Colors.greenAccent,
                       child: const SizedBox(
@@ -125,7 +127,7 @@ class _LoginPageState extends State<LoginPage> {
               ],
             ),
           ),
-          backgroundColor: Colors.green.withOpacity(0.87),
+          backgroundColor: Colors.white12.withOpacity(0.87),
         ),
       ),
     );

@@ -7,12 +7,15 @@ import 'package:fluttersrc/appBar.dart';
 import 'package:http/http.dart' as http;
 import 'package:page_transition/page_transition.dart';
 
+import '../environment.dart';
 import '../objects/userDto.dart';
 import '../services/backButton.dart';
 
 import 'dart:io' show Platform;
 
 import 'add_license.dart';
+
+const pageSize = 10;
 
 class VerticalTextCell extends StatelessWidget {
   final String text;
@@ -49,6 +52,8 @@ final List<IconData> columnIcons = [
 ];
 
 class _TablePageState extends State<TablePage> {
+
+  int currentPage = 1;
   List<Map<String, dynamic>> items = [];
   List<Map<String, dynamic>> filteredItems = [];
   bool _sortAscending = true;
@@ -63,7 +68,7 @@ class _TablePageState extends State<TablePage> {
   @override
   void initState() {
     super.initState();
-    fetchItems();
+    fetchItemsPage();
   }
 
   Future<void> _showLicenseDetailsDialog(
@@ -74,8 +79,11 @@ class _TablePageState extends State<TablePage> {
         bool isActivationButtonVisible = !(item['license_type'] == 1 ||
             item['license_type'] == 2 ||
             item['license_type'] == 3);
-        return Scaffold(
-          body: AlertDialog(
+        // return Scaffold(
+        //   body:
+        return AlertDialog(
+            scrollable: true,
+            // insetPadding: EdgeInsets.all(300),
             title: const Text('Данные лицензии'),
 
             content: Column(
@@ -136,8 +144,8 @@ class _TablePageState extends State<TablePage> {
                 child: const Text('OK'),
               ),
             ],
-          ),
-        );
+          );
+        // );
       },
     );
   }
@@ -149,6 +157,8 @@ class _TablePageState extends State<TablePage> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          scrollable: true,
+          // insetPadding: EdgeInsets.all(400),
           title: const Text('Введите код активации'),
           content: Column(
             children: [
@@ -187,7 +197,7 @@ class _TablePageState extends State<TablePage> {
   Future<void> _activateLicense(
       int licenseType, int licenseNumber, String activationCode) async {
     final response = await http.post(
-      Uri.parse('http://192.168.202.200:5000/api/createCode'),
+      Uri.parse('$API_URL/api/createCode'),
       headers: <String, String>{
         'Content-Type': 'application/json',
       },
@@ -205,6 +215,7 @@ class _TablePageState extends State<TablePage> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
+            insetPadding: EdgeInsets.all(400),
             title: const Text('Успешно активировано'),
             content: Text('Код активации: ${responseData['install_code']}'),
             actions: [
@@ -268,7 +279,7 @@ class _TablePageState extends State<TablePage> {
 
     if (confirmDelete) {
       final response = await http.delete(
-        Uri.parse('http://192.168.202.200:5000/api/items/$itemId'),
+        Uri.parse('$API_URL/api/items/$itemId'),
       );
 
       if (response.statusCode == 200) {
@@ -303,10 +314,52 @@ class _TablePageState extends State<TablePage> {
     }
   }
 
+
+  Future<void> fetchItemsPage() async {
+    try {
+      final response = await http.get(Uri.parse('$API_URL/api/fetchItems?page=$currentPage&size=$pageSize'));
+
+      if (response.statusCode == 200) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            backgroundColor: Colors.green,
+            content: Text('Загружено успешно'),
+            duration: Duration(seconds: 2), // Длительность отображения Snackbar
+          ),
+        );
+        final List<dynamic> responseData = json.decode(response.body);
+        final List<Map<String, dynamic>> itemsList =
+        List<Map<String, dynamic>>.from(responseData);
+
+        setState(() {
+          items = itemsList;
+        });
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            backgroundColor: Colors.red,
+            content: Text('Загрузка не удалась'),
+            duration: Duration(seconds: 2), // Длительность отображения Snackbar
+          ),
+        );
+        throw Exception('Failed to load items');
+      }
+    } catch (error) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.red,
+          content: Text('Произошла ошибка: $error'),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+      throw Exception('Failed to load items: $error');
+    }
+  }
+
   Future<void> fetchItems() async {
     try {
       final response =
-          await http.get(Uri.parse('http://192.168.202.200:5000/api/items'));
+          await http.get(Uri.parse('$API_URL/api/items'));
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -783,8 +836,34 @@ class _TablePageState extends State<TablePage> {
                       );
                     }).toList(),
                   );
+
                 }
-              })
+
+              }),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                    icon: Icon(Icons.arrow_back),
+                    onPressed: currentPage > 1 ? () {
+                      setState(() {
+                        currentPage--;
+                        fetchItemsPage(); // Загружаем предыдущую страницу
+                      });
+                    } : null,
+                  ),
+                  Text('Страница: $currentPage'),
+                  IconButton(
+                    icon: Icon(Icons.arrow_forward),
+                    onPressed: () {
+                      setState(() {
+                        currentPage++;
+                        fetchItemsPage(); // Загружаем следующую страницу
+                      });
+                    },
+                  ),
+                ],
+              ),
             ],
           ),
         ),

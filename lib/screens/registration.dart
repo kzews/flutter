@@ -7,6 +7,7 @@ import 'package:fluttersrc/screens/users_table.dart';
 import 'package:http/http.dart' as http;
 
 import '../appBar.dart';
+import '../environment.dart';
 import '../services/backButton.dart';
 
 class RegisterPage extends StatefulWidget {
@@ -30,7 +31,7 @@ class _RegisterPageState extends State<RegisterPage> {
   Future<void> addItem() async {
     if (_formKey.currentState!.validate()) {
       final response = await http.post(
-        Uri.parse('http://192.168.202.200:5000/api/register'),
+        Uri.parse('$API_URL/api/register'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },
@@ -116,6 +117,7 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
             ),
             ElevatedButton(
+
               onPressed: addItem,
               child: const Text('Добавить usera'),
             ),

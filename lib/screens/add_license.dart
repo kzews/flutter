@@ -7,6 +7,7 @@ import 'package:fluttersrc/screens/table.dart';
 import 'package:http/http.dart' as http;
 
 import '../appBar.dart';
+import '../environment.dart';
 import '../objects/userDto.dart';
 import '../services/backButton.dart';
 
@@ -39,7 +40,7 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> fetchItems() async {
     final response =
-        await http.get(Uri.parse('http://192.168.202.200:5000/api/items'));
+        await http.get(Uri.parse('$API_URL/api/items'));
 
     if (response.statusCode == 200) {
       final List<dynamic> responseData = json.decode(response.body);
@@ -57,7 +58,7 @@ class _HomePageState extends State<HomePage> {
   Future<void> addItem() async {
     if (_formKey.currentState!.validate()) {
       final response = await http.post(
-        Uri.parse('http://192.168.202.200:5000/api/items'),
+        Uri.parse('$API_URL/api/items'),
         headers: <String, String>{
           'Content-Type': 'application/json; charset=UTF-8',
         },

@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
         ),
         elevatedButtonTheme: ElevatedButtonThemeData(
           style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.green, // Зеленый цвет для кнопки
+            backgroundColor: Colors.red, // Зеленый цвет для кнопки
             elevation: 0, // Высота тени кнопки
             shape: RoundedRectangleBorder(
               borderRadius:
@@ -39,7 +39,8 @@ class MyApp extends StatelessWidget {
           backgroundColor: Colors.black, // Зеленый цвет для AppBar
         ),
         scaffoldBackgroundColor:
-            Colors.white70.withOpacity(0.87), // Прозрачно-зеленый фон
+            // Colors.white24.withOpacity(0.87), // Прозрачно-зеленый фон
+        Colors.white30
       ),
       home: const LoginPage(),
     );

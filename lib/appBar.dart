@@ -66,6 +66,8 @@ class AppDrawer extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          scrollable: true,
+          // insetPadding: EdgeInsets.all(400),
           title: Text('Данные о пользователе'),
           content: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -97,6 +99,7 @@ class AppDrawer extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
+          insetPadding: EdgeInsets.all(350),
           title: Text('Изменить данные'),
           content: Column(
             children: [
@@ -221,17 +224,12 @@ class AppDrawer extends StatelessWidget {
               ],
             ),
           ),
-          ListTile(
-            title: const Text('Выйти'),
-            onTap: () {
-              Navigator.of(context).pushReplacement(PageTransition(
-                type: PageTransitionType.leftToRight,
-                child: LoginPage(),
-              ));
-            },
-          ),
+
+
         ],
+
       ),
+
     );
   }
 }

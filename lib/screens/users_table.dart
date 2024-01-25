@@ -6,6 +6,7 @@ import 'package:fluttersrc/appBar.dart';
 import 'package:fluttersrc/services/backButton.dart';
 import 'package:http/http.dart' as http;
 
+import '../environment.dart';
 import '../objects/userDto.dart';
 
 class VerticalTextCell extends StatelessWidget {
@@ -90,7 +91,7 @@ class _UsersPageState extends State<UsersPage> {
       try {
         Dio dio = Dio();
         Response response = await dio.delete(
-          'http://192.168.202.200:5000/api/users/$itemId',
+          '$API_URL/api/users/$itemId',
           data: jsonEncode(userDto),
           options: Options(headers: {
             'Content-Type': 'application/json',
@@ -135,7 +136,7 @@ class _UsersPageState extends State<UsersPage> {
   Future<void> _updateUser(
       int itemId, String login, String role) async {
     final response = await http.put(
-      Uri.parse('http://192.168.202.200:5000/api/users/$itemId'),
+      Uri.parse('$API_URL/api/users/$itemId'),
       headers: <String, String>{
         'Content-Type': 'application/json',
       },
@@ -173,7 +174,7 @@ class _UsersPageState extends State<UsersPage> {
     Dio dio = Dio();
     try {
       var response = await dio.post(
-        'http://192.168.202.200:5000/api/registerPersons',
+        '$API_URL/api/registerPersons',
         data: jsonEncode(userDto),
         options: Options(
           contentType: "application/json",
