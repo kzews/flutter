@@ -17,31 +17,29 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Flutter Database App',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
-        inputDecorationTheme: const InputDecorationTheme(
-          focusedBorder: UnderlineInputBorder(
-            borderSide: BorderSide(color: Colors.black),
+          primarySwatch: Colors.blue,
+          inputDecorationTheme: const InputDecorationTheme(
+            focusedBorder: UnderlineInputBorder(
+              borderSide: BorderSide(color: Colors.black),
+            ),
+            labelStyle: TextStyle(color: Colors.black),
           ),
-          labelStyle: TextStyle(color: Colors.black),
-        ),
-        elevatedButtonTheme: ElevatedButtonThemeData(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red, // Зеленый цвет для кнопки
-            elevation: 0, // Высота тени кнопки
-            shape: RoundedRectangleBorder(
-              borderRadius:
-                  BorderRadius.circular(20.0), // Сделать кнопку круглой
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red, // Зеленый цвет для кнопки
+              elevation: 0, // Высота тени кнопки
+              shape: RoundedRectangleBorder(
+                borderRadius:
+                    BorderRadius.circular(20.0), // Сделать кнопку круглой
+              ),
             ),
           ),
-        ),
-
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.black, // Зеленый цвет для AppBar
-        ),
-        scaffoldBackgroundColor:
-            // Colors.white24.withOpacity(0.87), // Прозрачно-зеленый фон
-        Colors.white30
-      ),
+          appBarTheme: const AppBarTheme(
+            backgroundColor: Colors.black, // Зеленый цвет для AppBar
+          ),
+          scaffoldBackgroundColor:
+              // Colors.white24.withOpacity(0.87), // Прозрачно-зеленый фон
+              Colors.white30),
       home: const LoginPage(),
     );
   }

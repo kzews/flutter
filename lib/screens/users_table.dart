@@ -133,8 +133,7 @@ class _UsersPageState extends State<UsersPage> {
     }
   }
 
-  Future<void> _updateUser(
-      int itemId, String login, String role) async {
+  Future<void> _updateUser(int itemId, String login, String role) async {
     final response = await http.put(
       Uri.parse('$API_URL/api/users/$itemId'),
       headers: <String, String>{
@@ -285,7 +284,8 @@ class _UsersPageState extends State<UsersPage> {
             ),
             TextButton(
               onPressed: () {
-                _updateUser(item['id'], loginController.text, roleController.text);
+                _updateUser(
+                    item['id'], loginController.text, roleController.text);
                 fetchItems(widget.userDto);
                 Navigator.of(context).pop();
               },

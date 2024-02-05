@@ -52,8 +52,7 @@ class _RegisterPageState extends State<RegisterPage> {
           const SnackBar(
             backgroundColor: Colors.green,
             content: Text('Пользователь успешно добавлен'),
-            duration:
-            Duration(seconds: 2), // Длительность отображения Snackbar
+            duration: Duration(seconds: 2), // Длительность отображения Snackbar
           ),
         );
       } else {
@@ -117,7 +116,6 @@ class _RegisterPageState extends State<RegisterPage> {
               ),
             ),
             ElevatedButton(
-
               onPressed: addItem,
               child: const Text('Добавить usera'),
             ),

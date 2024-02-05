@@ -39,8 +39,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> fetchItems() async {
-    final response =
-        await http.get(Uri.parse('$API_URL/api/items'));
+    final response = await http.get(Uri.parse('$API_URL/api/items'));
 
     if (response.statusCode == 200) {
       final List<dynamic> responseData = json.decode(response.body);
@@ -88,8 +87,7 @@ class _HomePageState extends State<HomePage> {
             const SnackBar(
               backgroundColor: Colors.red,
               content: Text('Неверный формат даты'),
-              duration:
-                  Duration(seconds: 2),
+              duration: Duration(seconds: 2),
             ),
           );
         }

@@ -10,12 +10,9 @@ import 'package:page_transition/page_transition.dart';
 import '../environment.dart';
 import '../objects/userDto.dart';
 import '../services/backButton.dart';
-
-import 'dart:io' show Platform;
-
 import 'add_license.dart';
 
-const pageSize = 10;
+
 
 class VerticalTextCell extends StatelessWidget {
   final String text;
@@ -52,18 +49,20 @@ final List<IconData> columnIcons = [
 ];
 
 class _TablePageState extends State<TablePage> {
-
   int currentPage = 1;
   List<Map<String, dynamic>> items = [];
   List<Map<String, dynamic>> filteredItems = [];
   bool _sortAscending = true;
   int _sortColumnIndex = 0;
   DateTime? currentBackPressTime;
+  int pageSize = 10;
 
   TextEditingController nameFilterController = TextEditingController();
   TextEditingController licenseTypeFilterController = TextEditingController();
   TextEditingController licenseNumberFilterController = TextEditingController();
   TextEditingController licenseKeyFilterController = TextEditingController();
+  TextEditingController pageController = TextEditingController();
+  TextEditingController pageSizeController = TextEditingController();
 
   @override
   void initState() {
@@ -82,69 +81,69 @@ class _TablePageState extends State<TablePage> {
         // return Scaffold(
         //   body:
         return AlertDialog(
-            scrollable: true,
-            // insetPadding: EdgeInsets.all(300),
-            title: const Text('Данные лицензии'),
+          scrollable: true,
+          // insetPadding: EdgeInsets.all(300),
+          title: const Text('Данные лицензии'),
 
-            content: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('Владелец: ${item['name']}'),
-                Text(
-                    'Срок: ${item['expiry_date'].toString().isEmpty ? 'бессрочно' : item['expiry_date']}'),
-                Text(
-                    'Пропускная способность: ${item['max_bandwidth'] == '0' ? 'без ограничений' : item['max_bandwidth']}'),
-                Text(
-                    'Максимальное количество пользователей: ${item['max_users'] == 0 ? 'без ограничений' : item['max_users']}'),
-                Text(
-                    'Максимальное количество сессий: ${item['max_vpn_sessions'] == 0 ? 'без ограничений' : item['max_vpn_sessions']}'),
-                Text(
-                    'Тип лицензии: ${item['license_type'] == 1 ? 'сервер' : item['license_type'] == 3 ? 'клиент' : item['license_type'] == 2 ? 'мост' : item['license_type']}'),
-                Text('Номер лицензии: ${item['license_number']}'),
-                SelectableText(
-                  'Лицензия: ${item['license_key']}',
-                  onTap: () {
-                    Clipboard.setData(ClipboardData(text: item['license_key']));
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(
-                        behavior: SnackBarBehavior.floating,
-                        margin: EdgeInsets.all(150),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(20)),
-                        ),
-                        backgroundColor: Colors.grey,
-                        content: Text('текст скопирован'),
-                        duration: Duration(seconds: 1),
+          content: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Владелец: ${item['name']}'),
+              Text(
+                  'Срок: ${item['expiry_date'].toString().isEmpty ? 'бессрочно' : item['expiry_date']}'),
+              Text(
+                  'Пропускная способность: ${item['max_bandwidth'] == '0' ? 'без ограничений' : item['max_bandwidth']}'),
+              Text(
+                  'Максимальное количество пользователей: ${item['max_users'] == 0 ? 'без ограничений' : item['max_users']}'),
+              Text(
+                  'Максимальное количество сессий: ${item['max_vpn_sessions'] == 0 ? 'без ограничений' : item['max_vpn_sessions']}'),
+              Text(
+                  'Тип лицензии: ${item['license_type'] == 1 ? 'сервер' : item['license_type'] == 3 ? 'клиент' : item['license_type'] == 2 ? 'мост' : item['license_type']}'),
+              Text('Номер лицензии: ${item['license_number']}'),
+              SelectableText(
+                'Лицензия: ${item['license_key']}',
+                onTap: () {
+                  Clipboard.setData(ClipboardData(text: item['license_key']));
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      behavior: SnackBarBehavior.floating,
+                      margin: EdgeInsets.all(150),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(20)),
                       ),
-                    );
-                  },
-                ),
-              ],
-            ),
-            actions: [
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
+                      backgroundColor: Colors.grey,
+                      content: Text('текст скопирован'),
+                      duration: Duration(seconds: 1),
+                    ),
+                  );
                 },
-                child: const Text('В PDF-формате '),
-              ),
-              Visibility(
-                visible: isActivationButtonVisible,
-                child: TextButton(
-                  onPressed: () {
-                    _showActivationDialog(item);
-                  },
-                  child: const Text('Активировать лицензию'),
-                ),
-              ),
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-                child: const Text('OK'),
               ),
             ],
-          );
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('В PDF-формате '),
+            ),
+            Visibility(
+              visible: isActivationButtonVisible,
+              child: TextButton(
+                onPressed: () {
+                  _showActivationDialog(item);
+                },
+                child: const Text('Активировать лицензию'),
+              ),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
         // );
       },
     );
@@ -215,7 +214,7 @@ class _TablePageState extends State<TablePage> {
         context: context,
         builder: (BuildContext context) {
           return AlertDialog(
-            insetPadding: EdgeInsets.all(400),
+            insetPadding: const EdgeInsets.all(400),
             title: const Text('Успешно активировано'),
             content: Text('Код активации: ${responseData['install_code']}'),
             actions: [
@@ -237,7 +236,9 @@ class _TablePageState extends State<TablePage> {
       //   ),
       // );
     } else {
-      print(response.statusCode);
+      if (kDebugMode) {
+        print(response.statusCode);
+      }
       if (response.statusCode == 400) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -283,7 +284,7 @@ class _TablePageState extends State<TablePage> {
       );
 
       if (response.statusCode == 200) {
-        await fetchItems();
+        await fetchItemsPage();
 
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -314,22 +315,22 @@ class _TablePageState extends State<TablePage> {
     }
   }
 
-
   Future<void> fetchItemsPage() async {
     try {
-      final response = await http.get(Uri.parse('$API_URL/api/fetchItems?page=$currentPage&size=$pageSize'));
+      final response = await http.get(Uri.parse(
+          '$API_URL/api/fetchItems?page=$currentPage&size=$pageSize'));
 
       if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            backgroundColor: Colors.green,
-            content: Text('Загружено успешно'),
-            duration: Duration(seconds: 2), // Длительность отображения Snackbar
-          ),
-        );
+        // ScaffoldMessenger.of(context).showSnackBar(
+        //   const SnackBar(
+        //     backgroundColor: Colors.green,
+        //     content: Text('Загружено успешно'),
+        //     duration: Duration(seconds: 2), // Длительность отображения Snackbar
+        //   ),
+        // );
         final List<dynamic> responseData = json.decode(response.body);
         final List<Map<String, dynamic>> itemsList =
-        List<Map<String, dynamic>>.from(responseData);
+            List<Map<String, dynamic>>.from(responseData);
 
         setState(() {
           items = itemsList;
@@ -358,8 +359,7 @@ class _TablePageState extends State<TablePage> {
 
   Future<void> fetchItems() async {
     try {
-      final response =
-          await http.get(Uri.parse('$API_URL/api/items'));
+      final response = await http.get(Uri.parse('$API_URL/api/items'));
 
       if (response.statusCode == 200) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -416,17 +416,43 @@ class _TablePageState extends State<TablePage> {
     });
   }
 
-  void _filterItems() {
+  Future<void> _filterItems(int pageSize, int pageNumber) async {
     final nameFilter = nameFilterController.text.toLowerCase();
     final licenseTypeFilter = licenseTypeFilterController.text.toLowerCase();
-    final licenseNumberFilter =
-        licenseNumberFilterController.text.toLowerCase();
+    final licenseNumberFilter = licenseNumberFilterController.text.toLowerCase();
     final licenseKeyFilter = licenseKeyFilterController.text.toLowerCase();
 
+    final url = Uri.parse('$API_URL/api/filterItems');
+    final response = await http.post(
+      url,
+      body: jsonEncode({
+        'name': nameFilter,
+        'license_type': licenseTypeFilter,
+        'license_key': licenseKeyFilter,
+        'pageSize': pageSize, // Добавляем размер страницы в параметры запроса
+        'pageNumber': pageNumber,
+      }),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> responseData = json.decode(response.body);
+      final List<Map<String, dynamic>> itemsList =
+      List<Map<String, dynamic>>.from(responseData);
+
+      setState(() {
+        items = itemsList;
+      });
+    } else {
+      // Обработка ошибки, если запрос не удался
+      // Например, отображение сообщения об ошибке пользователю
+      print('Request failed with status: ${response.statusCode}');
+    }
+
     setState(() {
+      fetchItemsPage();
       filteredItems = items.where((item) {
         final name = item['name'].toString().toLowerCase();
-
         final licenseType = item['license_type'].toString().toLowerCase();
         final licenseNumber = item['license_number'].toString().toLowerCase();
         final licenseKey = item['license_key'].toString().toLowerCase();
@@ -450,12 +476,8 @@ class _TablePageState extends State<TablePage> {
         : Icon(icon);
   }
 
-  int _rowsPerPage = 10; // Начальное количество строк на странице
-  int _currentPage = 0;
-
   @override
   Widget build(BuildContext context) {
-
     return WillPopScope(
       onWillPop: () async {
         return backButton(context);
@@ -473,17 +495,17 @@ class _TablePageState extends State<TablePage> {
                     TextField(
                       controller: nameFilterController,
                       onChanged: (value) {
-                        _filterItems();
+                        _filterItems(pageSize, currentPage);
                         setState(() {});
                       },
                       decoration: const InputDecoration(
-                        labelText: 'Фильтр по названию',
+                        labelText: 'Фильтр по владельцу',
                       ),
                     ),
                     TextField(
                       controller: licenseTypeFilterController,
                       onChanged: (value) {
-                        _filterItems();
+                        _filterItems(pageSize, currentPage);
                         setState(() {});
                       },
                       decoration: const InputDecoration(
@@ -493,7 +515,7 @@ class _TablePageState extends State<TablePage> {
                     TextField(
                       controller: licenseKeyFilterController,
                       onChanged: (value) {
-                        _filterItems();
+                        _filterItems(pageSize, currentPage);
                         setState(() {});
                       },
                       decoration: const InputDecoration(
@@ -512,16 +534,12 @@ class _TablePageState extends State<TablePage> {
                       scrollDirection: Axis.horizontal,
                       child: SizedBox(
                         width: MediaQuery.of(context).size.width,
-
                         child: DataTable(
-
-
                           showCheckboxColumn: false,
                           headingRowColor: MaterialStateColor.resolveWith(
-                              (Set<MaterialState> states){
-                                return Colors.blue;
-                              }
-                          ),
+                              (Set<MaterialState> states) {
+                            return Colors.blue;
+                          }),
                           border: TableBorder.all(
                             width: 2.0,
                             color: Colors.black45,
@@ -545,7 +563,7 @@ class _TablePageState extends State<TablePage> {
                             ),
                             DataColumn(
                               label:
-                                  _buildColumnLabel('срок', Icons.date_range),
+                                  _buildColumnLabel('Срок', Icons.date_range),
                               tooltip: 'срок',
                               onSort: (columnIndex, ascending) {
                                 setState(() {
@@ -558,9 +576,9 @@ class _TablePageState extends State<TablePage> {
                             ),
                             DataColumn(
                               label: _buildColumnLabel(
-                                  'пропускная\nспособность',
+                                  'Пропускная\nспособность',
                                   Icons.network_check),
-                              tooltip: 'пропускная\nспособность',
+                              tooltip: 'Пропускная\nспособность',
                               onSort: (columnIndex, ascending) {
                                 setState(() {
                                   _sortAscending = ascending;
@@ -572,8 +590,8 @@ class _TablePageState extends State<TablePage> {
                             ),
                             DataColumn(
                               label: _buildColumnLabel(
-                                  'макс кол-во\nпользователей', Icons.people),
-                              tooltip: 'макс кол-во\nпользователей',
+                                  'Макс кол-во\nпользователей', Icons.people),
+                              tooltip: 'Макс кол-во\nпользователей',
                               onSort: (columnIndex, ascending) {
                                 setState(() {
                                   _sortAscending = ascending;
@@ -585,8 +603,8 @@ class _TablePageState extends State<TablePage> {
                             ),
                             DataColumn(
                               label: _buildColumnLabel(
-                                  'макс кол-во сессий', Icons.account_tree),
-                              tooltip: 'макс кол-во сессий',
+                                  'Макс кол-во сессий', Icons.account_tree),
+                              tooltip: 'Макс кол-во сессий',
                               onSort: (columnIndex, ascending) {
                                 setState(() {
                                   _sortAscending = ascending;
@@ -597,9 +615,9 @@ class _TablePageState extends State<TablePage> {
                               },
                             ),
                             DataColumn(
-                              label: _buildColumnLabel('тип лицензии',
+                              label: _buildColumnLabel('Тип лицензии',
                                   Icons.format_list_numbered_rounded),
-                              tooltip: 'тип лицензии',
+                              tooltip: 'Тип лицензии',
                               onSort: (columnIndex, ascending) {
                                 setState(() {
                                   _sortAscending = ascending;
@@ -610,9 +628,9 @@ class _TablePageState extends State<TablePage> {
                               },
                             ),
                             DataColumn(
-                              label: _buildColumnLabel('лицензия',
+                              label: _buildColumnLabel('Лицензия',
                                   Icons.format_list_numbered_rounded),
-                              tooltip: 'лицензия',
+                              tooltip: 'Лицензия',
                               onSort: (columnIndex, ascending) {
                                 setState(() {
                                   _sortAscending = ascending;
@@ -623,9 +641,9 @@ class _TablePageState extends State<TablePage> {
                               },
                             ),
                             DataColumn(
-                              label: _buildColumnLabel('код активации',
+                              label: _buildColumnLabel('Код активации',
                                   Icons.format_list_numbered_rounded),
-                              tooltip: 'код активации',
+                              tooltip: 'Код активации',
                               onSort: (columnIndex, ascending) {
                                 setState(() {
                                   _sortAscending = ascending;
@@ -662,13 +680,16 @@ class _TablePageState extends State<TablePage> {
                                           ),
                                         ),
                                         DataCell(
-                                          Text(
-                                            item['expiry_date']
-                                                    .toString()
-                                                    .isEmpty
-                                                ? 'бессрочно'
-                                                : item['expiry_date']
-                                                    .toString(),
+
+                                          Center(
+                                            child: Text(
+                                              item['expiry_date']
+                                                      .toString()
+                                                      .isEmpty
+                                                  ? 'бессрочно'
+                                                  : item['expiry_date']
+                                                      .toString(),
+                                            ),
                                           ),
                                         ),
                                         DataCell(
@@ -682,43 +703,55 @@ class _TablePageState extends State<TablePage> {
                                           ),
                                         ),
                                         DataCell(
-                                          Text(
-                                            item['max_users'] == 0
-                                                ? '∞' // or any other symbol or text
-                                                : item['max_users'].toString(),
+                                          Center(
+                                            child: Text(
+                                              item['max_users'] == 0
+                                                  ? '∞' // or any other symbol or text
+                                                  : item['max_users'].toString(),
+                                            ),
                                           ),
                                         ),
                                         DataCell(
-                                          Text(
-                                            item['max_vpn_sessions'] == 0
-                                                ? '∞' // or any other symbol or text
-                                                : item['max_vpn_sessions']
-                                                    .toString(),
+                                          Center(
+                                            child: Text(
+                                              item['max_vpn_sessions'] == 0
+                                                  ? '∞' // or any other symbol or text
+                                                  : item['max_vpn_sessions']
+                                                      .toString(),
+                                            ),
                                           ),
                                         ),
                                         DataCell(
-                                          Text(
-                                            item['license_type'].toString(),
+                                          Center(
+                                            child: Text(
+                                              item['license_type'].toString(),
+                                            ),
                                           ),
                                         ),
                                         DataCell(
-                                          Text(
-                                            item['license_key'].toString(),
+                                          Center(
+                                            child: Text(
+                                              item['license_key'].toString(),
+                                            ),
                                           ),
                                         ),
                                         DataCell(
-                                          Text(
-                                            item['generate_key'].toString(),
+                                          Center(
+                                            child: Text(
+                                              item['generate_key'].toString(),
+                                            ),
                                           ),
                                         ),
                                         DataCell(
-                                          ElevatedButton(
-                                            onPressed: () {
-                                              _deleteItem(item['id']);
-                                            },
-                                            child: const Icon(
-                                              Icons.delete,
-                                              color: Colors.white,
+                                          Center(
+                                            child: ElevatedButton(
+                                              onPressed: () {
+                                                _deleteItem(item['id']);
+                                              },
+                                              child: const Icon(
+                                                Icons.delete,
+                                                color: Colors.white,
+                                              ),
                                             ),
                                           ),
                                         ),
@@ -773,94 +806,142 @@ class _TablePageState extends State<TablePage> {
                     ),
                   );
                 } else {
-
-                  int columnCount = availableWidth > 600 ? 2 : 1;
-
+                  // int columnCount = availableWidth > 600 ? 2 : 1;
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: (nameFilterController.text.isEmpty &&
-                        licenseTypeFilterController.text.isEmpty &&
-                        licenseKeyFilterController.text.isEmpty)
+                            licenseTypeFilterController.text.isEmpty &&
+                            licenseKeyFilterController.text.isEmpty)
                         ? items.map((item) {
-                      return InkWell(
-                        onTap: () {
-                          _showLicenseDetailsDialog(context, item);
-                        },
-                        child: Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(20.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Название: ${item['name']}'),
-                                Text('Срок: ${item['expiry_date']}'),
-                                Text(
-                                    'пропускная способность: ${item['max_bandwidth']}'),
-                                Text('пользователи: ${item['max_users']}'),
-                                Text('сессии: ${item['max_vpn_sessions']}'),
-                                Text('тип лицензии: ${item['license_type']}'),
-                                Text('лицензионный ключ: ${item['license_key']}'),
-                                Text('ключ активации: ${item['generate_key']}'),
-                                // Добавьте другие поля по мере необходимости
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList()
+                            return InkWell(
+                              onTap: () {
+                                _showLicenseDetailsDialog(context, item);
+                              },
+                              child: Card(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(20.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text('Название: ${item['name']}'),
+                                      Text('Срок: ${item['expiry_date']}'),
+                                      Text(
+                                          'пропускная способность: ${item['max_bandwidth']}'),
+                                      Text(
+                                          'пользователи: ${item['max_users']}'),
+                                      Text(
+                                          'сессии: ${item['max_vpn_sessions']}'),
+                                      Text(
+                                          'тип лицензии: ${item['license_type']}'),
+                                      Text(
+                                          'лицензионный ключ: ${item['license_key']}'),
+                                      Text(
+                                          'ключ активации: ${item['generate_key']}'),
+                                      // Добавьте другие поля по мере необходимости
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList()
                         : filteredItems.map((item) {
-                      return InkWell(
-                        onTap: () {
-                          _showLicenseDetailsDialog(context, item);
-                        },
-                        child: Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text('Название: ${item['name']}'),
-                                Text('Срок: ${item['expiry_date']}'),
-                                Text(
-                                    'пропускная способность: ${item['max_bandwidth']}'),
-                                Text('пользователи: ${item['max_users']}'),
-                                Text('сессии: ${item['max_vpn_sessions']}'),
-                                Text('тип лицензии: ${item['license_type']}'),
-                                Text('лицензионный ключ: ${item['license_key']}'),
-                                Text('ключ активации: ${item['generate_key']}'),
-                                // Добавьте другие поля по мере необходимости
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
+                            return InkWell(
+                              onTap: () {
+                                _showLicenseDetailsDialog(context, item);
+                              },
+                              child: Card(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text('Название: ${item['name']}'),
+                                      Text('Срок: ${item['expiry_date']}'),
+                                      Text(
+                                          'пропускная способность: ${item['max_bandwidth']}'),
+                                      Text(
+                                          'пользователи: ${item['max_users']}'),
+                                      Text(
+                                          'сессии: ${item['max_vpn_sessions']}'),
+                                      Text(
+                                          'тип лицензии: ${item['license_type']}'),
+                                      Text(
+                                          'лицензионный ключ: ${item['license_key']}'),
+                                      Text(
+                                          'ключ активации: ${item['generate_key']}'),
+                                      // Добавьте другие поля по мере необходимости
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList(),
                   );
-
                 }
-
               }),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  // Кнопка для перехода на предыдущую страницу
                   IconButton(
-                    icon: Icon(Icons.arrow_back),
-                    onPressed: currentPage > 1 ? () {
+                    icon: const Icon(Icons.arrow_back),
+                    onPressed: currentPage > 1
+                        ? () {
                       setState(() {
                         currentPage--;
-                        fetchItemsPage(); // Загружаем предыдущую страницу
+                        pageController.text = currentPage.toString();
+                        fetchItemsPage();
+                        _filterItems(pageSize, currentPage);// Загружаем предыдущую страницу
                       });
-                    } : null,
+                    }
+                        : null,
                   ),
-                  Text('Страница: $currentPage'),
+                  Text('Страница: '),
+                  // Поле ввода для номера страницы
+                  SizedBox(
+                    width: 50, // Ширина поля TextField
+                    child: TextField(
+                      controller: pageController,
+                      keyboardType: TextInputType.number,
+                      onChanged: (value) {
+                        currentPage = value.isNotEmpty ? int.tryParse(value) ?? currentPage : 1;
+                        fetchItemsPage();
+                        _filterItems(pageSize, currentPage);
+                      },
+                    ),
+                  ),
+
+                  // Кнопка для перехода на следующую страницу
                   IconButton(
-                    icon: Icon(Icons.arrow_forward),
+                    icon: const Icon(Icons.arrow_forward),
                     onPressed: () {
                       setState(() {
                         currentPage++;
-                        fetchItemsPage(); // Загружаем следующую страницу
+                        pageController.text = currentPage.toString(); // Обновляем значение в TextField
+                        fetchItemsPage();
+                        _filterItems(pageSize, currentPage);// Загружаем следующую страницу
                       });
                     },
+                  ),
+                  Text('Количество строк'),
+                  // Бокс для ввода размера страницы
+                  SizedBox(
+                    width: 50, // Ширина поля TextField
+                    child: TextField(
+                      controller: pageSizeController,
+                      keyboardType: TextInputType.number,
+                      onChanged: (value) {
+                        setState(() {
+
+                          pageSize = int.tryParse(value) ?? 10;
+                          // Обновляем значение pageSize
+                          fetchItemsPage();
+                          _filterItems(pageSize, currentPage);// Перезагружаем текущую страницу с новым размером
+                        });
+                      },
+                    ),
                   ),
                 ],
               ),
@@ -874,8 +955,8 @@ class _TablePageState extends State<TablePage> {
               child: HomePage(userDto: widget.userDto),
             ));
           },
-          child: Icon(Icons.add),
-          backgroundColor: Colors.yellow, // Цвет кнопки
+          backgroundColor: Colors.yellow,
+          child: const Icon(Icons.add), // Цвет кнопки
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       ),
