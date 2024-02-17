@@ -1,7 +1,11 @@
+import 'dart:convert';
+
+import 'package:dio/dio.dart' as Dio;
 import 'package:flutter/material.dart';
 import 'package:fluttersrc/screens/test_page.dart';
 import 'package:page_transition/page_transition.dart';
 
+import '../environment.dart';
 import '../objects/userDto.dart';
 import '../services/backButton.dart';
 import '../services/login.dart';
@@ -21,7 +25,6 @@ class MyApp extends StatelessWidget {
   }
 }
 
-//TODO сделать конпку "назад" не выходом из приложения
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -34,6 +37,46 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
   bool _isPasswordVisible = false; // Добавлено состояние для отображения пароля
   DateTime? currentBackPressTime;
+
+  @override
+  void initState() {
+    super.initState();
+    verifyToken(
+        // getTokenWeb().toString());
+    getToken().toString());// Проверка токена при загрузке страницы
+  }
+
+  Future<void> verifyToken(String token) async {
+    Dio.Dio dio = Dio.Dio();
+    // Если сервер доступен, отправляем запрос на аутентификацию
+    try {
+      var response = await dio.post(
+        '$API_URL/verify_token',
+        data: jsonEncode({'token': token}), // Передаем токен как часть данных
+        options: Dio.Options(
+          contentType: "application/json",
+          responseType: Dio.ResponseType.plain,
+        ),
+      );
+
+      if (response.statusCode == 200) {
+        // Если токен верифицирован успешно, создаем объект userDto
+        UserDto userDto = UserDto.fromJson(jsonDecode(response.data));
+        // Инициируем переход на страницу Home1Page с передачей userDto
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder: (context) => Home1Page(userDto: userDto),
+          ),
+        );
+      } else {
+        // Обработка других статусов ответа (например, когда токен просрочен или невалиден)
+        // Возможно, здесь вы захотите отобразить сообщение об ошибке или выполнить другие действия
+      }
+    } on Dio.DioException catch (ex) {
+      print(ex);
+      throw ex;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -61,7 +104,11 @@ class _LoginPageState extends State<LoginPage> {
           ),
           body: Padding(
             padding: EdgeInsets.symmetric(
-              horizontal: MediaQuery.of(context).size.width > 1500 ? 600 : 300,
+              horizontal: MediaQuery.of(context).size.width > 1500
+                  ? 600
+                  : MediaQuery.of(context).size.width < 750
+                      ? 20
+                      : 300,
             ),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
@@ -108,6 +155,8 @@ class _LoginPageState extends State<LoginPage> {
                         UserDto userDto = UserDto(
                           login: _login,
                           password: _password,
+                          // token: getTokenWeb().toString(),
+                          token: getToken().toString(),
                         );
                         login(userDto).then(
                           (value) async {

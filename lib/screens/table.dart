@@ -12,8 +12,6 @@ import '../objects/userDto.dart';
 import '../services/backButton.dart';
 import 'add_license.dart';
 
-
-
 class VerticalTextCell extends StatelessWidget {
   final String text;
 
@@ -372,7 +370,6 @@ class _TablePageState extends State<TablePage> {
         final List<dynamic> responseData = json.decode(response.body);
         final List<Map<String, dynamic>> itemsList =
             List<Map<String, dynamic>>.from(responseData);
-
         setState(() {
           items = itemsList;
         });
@@ -419,7 +416,8 @@ class _TablePageState extends State<TablePage> {
   Future<void> _filterItems(int pageSize, int pageNumber) async {
     final nameFilter = nameFilterController.text.toLowerCase();
     final licenseTypeFilter = licenseTypeFilterController.text.toLowerCase();
-    final licenseNumberFilter = licenseNumberFilterController.text.toLowerCase();
+    final licenseNumberFilter =
+        licenseNumberFilterController.text.toLowerCase();
     final licenseKeyFilter = licenseKeyFilterController.text.toLowerCase();
 
     final url = Uri.parse('$API_URL/api/filterItems');
@@ -438,7 +436,7 @@ class _TablePageState extends State<TablePage> {
     if (response.statusCode == 200) {
       final List<dynamic> responseData = json.decode(response.body);
       final List<Map<String, dynamic>> itemsList =
-      List<Map<String, dynamic>>.from(responseData);
+          List<Map<String, dynamic>>.from(responseData);
 
       setState(() {
         items = itemsList;
@@ -680,7 +678,6 @@ class _TablePageState extends State<TablePage> {
                                           ),
                                         ),
                                         DataCell(
-
                                           Center(
                                             child: Text(
                                               item['expiry_date']
@@ -707,7 +704,8 @@ class _TablePageState extends State<TablePage> {
                                             child: Text(
                                               item['max_users'] == 0
                                                   ? '∞' // or any other symbol or text
-                                                  : item['max_users'].toString(),
+                                                  : item['max_users']
+                                                      .toString(),
                                             ),
                                           ),
                                         ),
@@ -889,16 +887,17 @@ class _TablePageState extends State<TablePage> {
                     icon: const Icon(Icons.arrow_back),
                     onPressed: currentPage > 1
                         ? () {
-                      setState(() {
-                        currentPage--;
-                        pageController.text = currentPage.toString();
-                        fetchItemsPage();
-                        _filterItems(pageSize, currentPage);// Загружаем предыдущую страницу
-                      });
-                    }
+                            setState(() {
+                              currentPage--;
+                              pageController.text = currentPage.toString();
+                              fetchItemsPage();
+                              _filterItems(pageSize,
+                                  currentPage); // Загружаем предыдущую страницу
+                            });
+                          }
                         : null,
                   ),
-                  Text('Страница: '),
+                  const Text('Страница: '),
                   // Поле ввода для номера страницы
                   SizedBox(
                     width: 50, // Ширина поля TextField
@@ -906,7 +905,9 @@ class _TablePageState extends State<TablePage> {
                       controller: pageController,
                       keyboardType: TextInputType.number,
                       onChanged: (value) {
-                        currentPage = value.isNotEmpty ? int.tryParse(value) ?? currentPage : 1;
+                        currentPage = value.isNotEmpty
+                            ? int.tryParse(value) ?? currentPage
+                            : 1;
                         fetchItemsPage();
                         _filterItems(pageSize, currentPage);
                       },
@@ -919,13 +920,15 @@ class _TablePageState extends State<TablePage> {
                     onPressed: () {
                       setState(() {
                         currentPage++;
-                        pageController.text = currentPage.toString(); // Обновляем значение в TextField
+                        pageController.text = currentPage
+                            .toString(); // Обновляем значение в TextField
                         fetchItemsPage();
-                        _filterItems(pageSize, currentPage);// Загружаем следующую страницу
+                        _filterItems(pageSize,
+                            currentPage); // Загружаем следующую страницу
                       });
                     },
                   ),
-                  Text('Количество строк'),
+                  const Text('Количество строк'),
                   // Бокс для ввода размера страницы
                   SizedBox(
                     width: 50, // Ширина поля TextField
@@ -934,11 +937,11 @@ class _TablePageState extends State<TablePage> {
                       keyboardType: TextInputType.number,
                       onChanged: (value) {
                         setState(() {
-
                           pageSize = int.tryParse(value) ?? 10;
                           // Обновляем значение pageSize
                           fetchItemsPage();
-                          _filterItems(pageSize, currentPage);// Перезагружаем текущую страницу с новым размером
+                          _filterItems(pageSize,
+                              currentPage); // Перезагружаем текущую страницу с новым размером
                         });
                       },
                     ),

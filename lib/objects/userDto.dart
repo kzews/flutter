@@ -8,12 +8,14 @@ class UserDto {
   String? login;
   String? role;
   String? password;
+  String? token;
 
   UserDto({
     required this.login,
     this.role,
     this.password,
     this.id,
+    this.token,
   });
 
   factory UserDto.fromJson(Map<String, dynamic> json) =>

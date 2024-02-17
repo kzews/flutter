@@ -1,3 +1,5 @@
+// import 'dart:html';
+
 import 'package:flutter/material.dart';
 import 'package:fluttersrc/screens/add_license.dart';
 import 'package:fluttersrc/screens/login_page.dart';
@@ -45,6 +47,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         IconButton(
           icon: const Icon(Icons.exit_to_app),
           onPressed: () {
+            // window.localStorage.remove('token');
             Navigator.of(context).pushReplacement(PageTransition(
               type: PageTransitionType.leftToRight,
               child: LoginPage(),

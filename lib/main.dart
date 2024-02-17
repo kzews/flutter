@@ -39,7 +39,7 @@ class MyApp extends StatelessWidget {
           ),
           scaffoldBackgroundColor:
               // Colors.white24.withOpacity(0.87), // Прозрачно-зеленый фон
-              Colors.white30),
+              Colors.white),
       home: const LoginPage(),
     );
   }

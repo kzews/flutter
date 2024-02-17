@@ -1,21 +1,45 @@
 import 'dart:async';
 import 'dart:convert';
+// import 'dart:html';
 
-import 'package:dio/dio.dart';
+import 'package:dio/dio.dart' as Dio;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart' as Storage;
 
 import '../environment.dart';
 import '../objects/userDto.dart';
+
+final storage = Storage.FlutterSecureStorage();
+
+// Сохранение токена в localStorage
+// void saveTokenWeb(String token) {
+//   window.localStorage['token'] = token;
+// }
+
+
+// Получение токена из localStorage
+// String? getTokenWeb() {
+//   return window.localStorage['token'];
+// }
+
+// Сохранение токена в безопасном хранилище
+void saveToken(String token) async {
+  await new Storage.FlutterSecureStorage().write(key: 'token', value: token);
+}
+
+// Получение токена из безопасного хранилища
+Future<String?> getToken() async {
+  return await storage.read(key: 'token');
+}
 
 Future<UserDto> login(UserDto userDto) async {
   if (USE_FAKE_AUTH_API) {
     return UserDto(login: 'kirill99', role: 'admin', password: 'kirill99');
   }
 
-  Dio dio = Dio();
-//TODO: проверка доступности сервера
-//   Проверка доступности сервера
+  Dio.Dio dio = Dio.Dio();
   try {
-    await dio.get('$API_URL/'); // Здесь можно использовать любой запрос к серверу
+    await dio
+        .get('$API_URL/'); // Здесь можно использовать любой запрос к серверу
   } catch (e) {
     // Обработка ошибки - сервер не доступен
     print('Сервер не доступен: $e');
@@ -27,17 +51,23 @@ Future<UserDto> login(UserDto userDto) async {
     var response = await dio.post(
       '$API_URL/api/login',
       data: jsonEncode(userDto),
-      options: Options(
+      options: Dio.Options(
         contentType: "application/json",
-        responseType: ResponseType.plain,
+        responseType: Dio.ResponseType.plain,
       ),
     );
 
     var userJson = jsonDecode(response.data);
     userDto.role = userJson['role'];
     userDto.id = userJson['id'];
+    saveToken(userJson['token']);
+    // saveTokenWeb(userJson['token']);
+    //getToken();
+    // getTokenWeb();
+    print('токен который getToken' + getToken().toString());
+    // print('токен есть : ' + getTokenWeb().toString());
     return UserDto.fromJson(jsonDecode(response.data));
-  } on DioException catch (ex) {
+  } on Dio.DioException catch (ex) {
     print(ex);
     throw ex;
   }
