@@ -3,8 +3,10 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttersrc/appBar.dart';
+import 'package:fluttersrc/screens/registration.dart';
 import 'package:fluttersrc/services/backButton.dart';
 import 'package:http/http.dart' as http;
+import 'package:page_transition/page_transition.dart';
 
 import '../environment.dart';
 import '../objects/userDto.dart';
@@ -463,6 +465,17 @@ class _UsersPageState extends State<UsersPage> {
             ],
           ),
         ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            Navigator.of(context).pushReplacement(PageTransition(
+              type: PageTransitionType.leftToRight,
+              child: RegisterPage(userDto: widget.userDto),
+            ));
+          },
+          backgroundColor: Colors.yellow,
+          child: const Icon(Icons.add), // Цвет кнопки
+        ),
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       ),
     );
   }

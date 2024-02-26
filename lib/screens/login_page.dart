@@ -37,13 +37,19 @@ class _LoginPageState extends State<LoginPage> {
   final TextEditingController _passwordController = TextEditingController();
   bool _isPasswordVisible = false; // Добавлено состояние для отображения пароля
   DateTime? currentBackPressTime;
+  Future<String?> token3 = getToken();
 
   @override
   void initState() {
     super.initState();
-    verifyToken(
-        // getTokenWeb().toString());
-    getToken().toString());// Проверка токена при загрузке страницы
+    _initPage();
+  }
+
+  Future<void> _initPage() async {
+    String? token = await getToken();
+    if (token != null) {
+      await verifyToken(token);
+    }
   }
 
   Future<void> verifyToken(String token) async {
@@ -149,14 +155,14 @@ class _LoginPageState extends State<LoginPage> {
                           height: 56,
                           child:
                               Icon(Icons.arrow_forward, color: Colors.white)),
-                      onTap: () {
+                      onTap: () async {
                         var _login = _loginController.text.trim();
                         var _password = _passwordController.text;
                         UserDto userDto = UserDto(
                           login: _login,
                           password: _password,
                           // token: getTokenWeb().toString(),
-                          token: getToken().toString(),
+                          token: await getToken().toString(),
                         );
                         login(userDto).then(
                           (value) async {

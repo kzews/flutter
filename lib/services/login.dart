@@ -60,11 +60,13 @@ Future<UserDto> login(UserDto userDto) async {
     var userJson = jsonDecode(response.data);
     userDto.role = userJson['role'];
     userDto.id = userJson['id'];
+    userDto.token = userJson['token'];
     saveToken(userJson['token']);
     // saveTokenWeb(userJson['token']);
     //getToken();
     // getTokenWeb();
-    print('токен который getToken' + getToken().toString());
+    String? token = await getToken();
+    print('токен который getToken= $token');
     // print('токен есть : ' + getTokenWeb().toString());
     return UserDto.fromJson(jsonDecode(response.data));
   } on Dio.DioException catch (ex) {

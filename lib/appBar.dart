@@ -8,6 +8,7 @@ import 'package:fluttersrc/screens/table.dart';
 import 'package:fluttersrc/screens/test_page.dart';
 import 'package:fluttersrc/screens/users_table.dart';
 import 'package:fluttersrc/services/changeUser.dart';
+import 'package:fluttersrc/services/login.dart';
 import 'package:page_transition/page_transition.dart';
 
 import 'objects/userDto.dart';
@@ -46,14 +47,18 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
         ),
         IconButton(
           icon: const Icon(Icons.exit_to_app),
-          onPressed: () {
-            // window.localStorage.remove('token');
+          onPressed: () async {
+            // Удаление токена из хранилища
+            await storage.delete(key: 'token');
+
+            // Переход на страницу входа
             Navigator.of(context).pushReplacement(PageTransition(
               type: PageTransitionType.leftToRight,
               child: LoginPage(),
             ));
           },
         ),
+
       ],
     );
   }

@@ -68,6 +68,46 @@ class _TablePageState extends State<TablePage> {
     fetchItemsPage();
   }
 
+  Future<void> generatePDF(Map<String, dynamic> licenseData) async {
+    // Создание нового PDF-документа
+    // final pdf = pdf.Document();
+
+    // Добавление информации о лицензии в документ
+    // pdf.addPage(
+    //   pdf.Page(
+    //     build: (context) => pdf.Center(
+    //       child: pdf.Column(
+    //         mainAxisAlignment: pdf.MainAxisAlignment.center,
+    //         children: [
+    //           pdf.Text('Данные лицензии',
+    //               style: pdf.TextStyle(
+    //                 fontSize: 20,
+    //                 fontFallback: <String>['Arial'],
+    //               ),
+    //           ),
+    //           pdf.SizedBox(height: 20),
+    //           pdf.Text('Владелец: ${licenseData['name']}'),
+    //           pdf.Text('Срок: ${licenseData['expiry_date']}'),
+    //           // Добавьте остальную информацию о лицензии здесь...
+    //         ],
+    //       ),
+    //     ),
+    //   ),
+    // );
+
+    // // Получение байтов PDF-документа
+    // final bytes = await pdf.save();
+    //
+    // final tempDir = await getTemporaryDirectory();
+    // final tempPath = tempDir.path;
+    // final filePath = '$tempPath/license_data.pdf';
+    //
+    // final file = File(filePath);
+    // await file.writeAsBytes(bytes);
+    //
+    // await esysShare.Share.file('Лицензионные данные', 'license_data.pdf', bytes, 'application/pdf');
+  }
+
   Future<void> _showLicenseDetailsDialog(
       BuildContext context, Map<String, dynamic> item) async {
     await showDialog(
@@ -121,9 +161,10 @@ class _TablePageState extends State<TablePage> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop();
+                // Вызов функции для создания PDF-документа
+                generatePDF(item);
               },
-              child: const Text('В PDF-формате '),
+              child: const Text('В PDF-формате'),
             ),
             Visibility(
               visible: isActivationButtonVisible,
