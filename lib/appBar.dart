@@ -23,6 +23,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
 
   @override
   Widget build(BuildContext context) {
+
     return AppBar(
       title: const Text('Flutter Database App'),
       leading: Builder(
@@ -158,6 +159,7 @@ class AppDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    bool shouldShowButtons = userDto.role != "user";
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
@@ -174,7 +176,7 @@ class AppDrawer extends StatelessWidget {
               ),
             ),
           ),
-          ListTile(
+          shouldShowButtons ? ListTile(
             title: const Text('Главная'),
             onTap: () {
               Navigator.of(context).pushReplacement(PageTransition(
@@ -182,8 +184,8 @@ class AppDrawer extends StatelessWidget {
                 child: Home1Page(userDto: userDto),
               ));
             },
-          ),
-          ListTile(
+          ): Container(),
+          shouldShowButtons ? ListTile(
             title: const Text('Пользователи'),
             onTap: () {
               Navigator.of(context).pushReplacement(PageTransition(
@@ -191,8 +193,8 @@ class AppDrawer extends StatelessWidget {
                 child: UsersPage(userDto: userDto),
               ));
             },
-          ),
-          ListTile(
+          ): Container(),
+          shouldShowButtons ? ListTile(
             title: const Text('Добавить пользователя'),
             onTap: () {
               Navigator.of(context).pushReplacement(PageTransition(
@@ -200,7 +202,7 @@ class AppDrawer extends StatelessWidget {
                 child: RegisterPage(userDto: userDto),
               ));
             },
-          ),
+          ): Container(),
           ListTile(
             title: const Text('Лицензии'),
             onTap: () {
@@ -210,7 +212,7 @@ class AppDrawer extends StatelessWidget {
               ));
             },
           ),
-          ListTile(
+          shouldShowButtons ? ListTile(
             title: const Text('Добавить лицензию'),
             onTap: () {
               Navigator.of(context).pushReplacement(PageTransition(
@@ -218,7 +220,7 @@ class AppDrawer extends StatelessWidget {
                 child: HomePage(userDto: userDto),
               ));
             },
-          ),
+          ): Container(),
           ListTile(
             title: const Text('Данные о пользователе'),
             onTap: () {

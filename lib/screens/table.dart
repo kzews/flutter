@@ -1,11 +1,19 @@
 import 'dart:convert';
+import 'dart:io' as io;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:fluttersrc/appBar.dart';
 import 'package:http/http.dart' as http;
+import 'package:open_file/open_file.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:path_provider/path_provider.dart';
+import 'package:pdf/widgets.dart' as pdf;
+import 'package:pdf/widgets.dart' as pdfWidgets;
+import 'package:universal_html/html.dart' as universal;
+
+import 'package:uuid/uuid.dart';
 
 import '../environment.dart';
 import '../objects/userDto.dart';
@@ -54,7 +62,6 @@ class _TablePageState extends State<TablePage> {
   int _sortColumnIndex = 0;
   DateTime? currentBackPressTime;
   int pageSize = 10;
-
   TextEditingController nameFilterController = TextEditingController();
   TextEditingController licenseTypeFilterController = TextEditingController();
   TextEditingController licenseNumberFilterController = TextEditingController();
@@ -68,49 +75,162 @@ class _TablePageState extends State<TablePage> {
     fetchItemsPage();
   }
 
-  Future<void> generatePDF(Map<String, dynamic> licenseData) async {
-    // Создание нового PDF-документа
-    // final pdf = pdf.Document();
+  // Future<void> _createPDF() async {
+  //   //Create a PDF document.
+  //   PdfDocument document = PdfDocument();
+  //   //Add a page and draw text
+  //   document.pages.add().graphics.drawString(
+  //       'Hello World!', PdfStandardFont(PdfFontFamily.helvetica, 20),
+  //       brush: PdfSolidBrush(PdfColor(0, 0, 0)),
+  //       bounds: Rect.fromLTWH(20, 60, 150, 30));
+  //   //Save the document
+  //   List<int> bytes = await document.save();
+  //
+  //   AnchorElement(
+  //       href:
+  //       "data:application/octet-stream;charset=utf-16le;base64,${base64.encode(bytes)}")
+  //     ..setAttribute("download", "output.pdf")
+  //     ..click();
+  //   //Dispose the document
+  //   document.dispose();
+  // }
+  // Future<void> primer() async {
+  //   final pdf = pw.Document();
+  //
+  //   pdf.addPage(
+  //     pw.Page(
+  //       build: (pw.Context context) => pw.Center(
+  //         child: pw.Text('Hello World!'),
+  //       ),
+  //     ),
+  //   );
+  //
+  //   final file = File('example.pdf');
+  //   await file.writeAsBytes(await pdf.save());
+  // }
+  Future<void> savePDFWeb(Map<String, dynamic> licenseData) async {
+    final pdfDoc = pdf.Document();
+    final ttf = await rootBundle.load("fonts/Roboto-Regular.ttf");
 
-    // Добавление информации о лицензии в документ
-    // pdf.addPage(
-    //   pdf.Page(
-    //     build: (context) => pdf.Center(
-    //       child: pdf.Column(
-    //         mainAxisAlignment: pdf.MainAxisAlignment.center,
-    //         children: [
-    //           pdf.Text('Данные лицензии',
-    //               style: pdf.TextStyle(
-    //                 fontSize: 20,
-    //                 fontFallback: <String>['Arial'],
-    //               ),
-    //           ),
-    //           pdf.SizedBox(height: 20),
-    //           pdf.Text('Владелец: ${licenseData['name']}'),
-    //           pdf.Text('Срок: ${licenseData['expiry_date']}'),
-    //           // Добавьте остальную информацию о лицензии здесь...
-    //         ],
-    //       ),
-    //     ),
-    //   ),
-    // );
+    pdfDoc.addPage(
+      pdf.Page(
+        build: (context) => pdfWidgets.Center(
+          child: pdfWidgets.Column(
+            mainAxisAlignment: pdfWidgets.MainAxisAlignment.center,
+            children: [
+              pdfWidgets.Text(
+                'Информация о лицензии',
+                style: pdfWidgets.TextStyle(
+                  fontSize: 20,
+                  font: pdfWidgets.Font.ttf(ttf),
+                ),
+              ),
+              pdfWidgets.SizedBox(height: 20),
+              pdfWidgets.Text(
+                'Владелец: ${licenseData['name']}',
+                style: pdfWidgets.TextStyle(
+                  font: pdfWidgets.Font.ttf(ttf),
+                ),
+              ),
+              pdfWidgets.Text(
+                'срок: ${licenseData['expiry_date']}',
+                style: pdfWidgets.TextStyle(
+                  font: pdfWidgets.Font.ttf(ttf),
+                ),
+              ),
+              pdfWidgets.Text(
+                'Пропускная способность: ${licenseData['max_bandwidth'] == '0' ? 'без ограничений' : licenseData['max_bandwidth']}',
+                style: pdfWidgets.TextStyle(
+                  font: pdfWidgets.Font.ttf(ttf),
+                ),
+              ),
+              pdfWidgets.Text(
+                'max_users: ${licenseData['max_users'] == '0' ? 'без ограничений' : licenseData['max_users']}',
+                style: pdfWidgets.TextStyle(
+                  font: pdfWidgets.Font.ttf(ttf),
+                ),
+              ),
+              pdfWidgets.Text(
+                'License: ${licenseData['license_key']}',
+                style: pdfWidgets.TextStyle(
+                  font: pdfWidgets.Font.ttf(ttf),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
 
-    // // Получение байтов PDF-документа
-    // final bytes = await pdf.save();
-    //
-    // final tempDir = await getTemporaryDirectory();
-    // final tempPath = tempDir.path;
-    // final filePath = '$tempPath/license_data.pdf';
-    //
-    // final file = File(filePath);
-    // await file.writeAsBytes(bytes);
-    //
+    final bytes = await pdfDoc.save();
+    final blob = universal.Blob([Uint8List.fromList(bytes)]);
+    final url = universal.Url.createObjectUrlFromBlob(blob);
+    final anchor = universal.AnchorElement(href: url)
+      ..setAttribute("download", "license_data.pdf")
+      ..click();
+
+    universal.Url.revokeObjectUrl(url);
+  }
+
+  Future<void> savePDF(Map<String, dynamic> licenseData) async {
+    final pdfDoc = pdf.Document();
+    final ttf = await rootBundle.load("fonts/Roboto-Regular.ttf");
+
+    pdfDoc.addPage(
+      pdf.Page(
+        build: (context) => pdf.Center(
+          child: pdf.Column(
+            mainAxisAlignment: pdf.MainAxisAlignment.center,
+            children: [
+              pdf.Text(
+                'Информация о лицензии',
+                style: pdf.TextStyle(fontSize: 20, font: pdf.Font.ttf(ttf)),
+              ),
+              pdf.SizedBox(height: 20),
+              pdf.Text(
+                'Владелец: ${licenseData['name']}',
+                style: pdf.TextStyle(font: pdf.Font.ttf(ttf)),
+              ),
+              pdf.Text(
+                'срок: ${licenseData['expiry_date']}',
+                style: pdf.TextStyle(font: pdf.Font.ttf(ttf)),
+              ),
+              pdf.Text(
+                'Пропускная способность: ${licenseData['max_bandwidth'] == '0' ? 'без ограничений' : licenseData['max_bandwidth']}',
+                style: pdf.TextStyle(font: pdf.Font.ttf(ttf)),
+              ),
+              pdf.Text(
+                'max_users: ${licenseData['max_users'] == '0' ? 'без ограничений' : licenseData['max_users']}',
+                style: pdf.TextStyle(),
+              ),
+              pdf.Text(
+                'License: ${licenseData['license_key']}',
+                style: pdf.TextStyle(),
+              ),
+              // Добавьте остальную информацию о лицензии здесь...
+            ],
+          ),
+        ),
+      ),
+    );
+
+    final output = await getTemporaryDirectory();
+    final fileName = "${output.path}/${new Uuid().v1()}.pdf";
+    List<int> bytes = await pdfDoc.save(); // Ждем завершения сохранения PDF
+    final file = io.File(fileName);
+    await file
+        .writeAsBytes(bytes.toList()); // Преобразуем Uint8List в List<int>
+    OpenFile.open(fileName);
+
     // await esysShare.Share.file('Лицензионные данные', 'license_data.pdf', bytes, 'application/pdf');
   }
 
   Future<void> _showLicenseDetailsDialog(
-      BuildContext context, Map<String, dynamic> item) async {
+
+      BuildContext context, Map<String, dynamic> item, UserDto userDto) async {
+    bool shouldShowButtons = widget.userDto.role != "user";
     await showDialog(
+
       context: context,
       builder: (BuildContext context) {
         bool isActivationButtonVisible = !(item['license_type'] == 1 ||
@@ -127,6 +247,7 @@ class _TablePageState extends State<TablePage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Владелец: ${item['name']}'),
+              Text('Серийный номер: ${item['key']}'),
               Text(
                   'Срок: ${item['expiry_date'].toString().isEmpty ? 'бессрочно' : item['expiry_date']}'),
               Text(
@@ -137,7 +258,7 @@ class _TablePageState extends State<TablePage> {
                   'Максимальное количество сессий: ${item['max_vpn_sessions'] == 0 ? 'без ограничений' : item['max_vpn_sessions']}'),
               Text(
                   'Тип лицензии: ${item['license_type'] == 1 ? 'сервер' : item['license_type'] == 3 ? 'клиент' : item['license_type'] == 2 ? 'мост' : item['license_type']}'),
-              Text('Номер лицензии: ${item['license_number']}'),
+              shouldShowButtons ? Text('Номер лицензии: ${item['license_number']}'): Container(),
               SelectableText(
                 'Лицензия: ${item['license_key']}',
                 onTap: () {
@@ -161,8 +282,18 @@ class _TablePageState extends State<TablePage> {
           actions: [
             TextButton(
               onPressed: () {
-                // Вызов функции для создания PDF-документа
-                generatePDF(item);
+                if (kIsWeb) {
+                  savePDFWeb(
+                      item); //your web page with web package import in it
+                } else if (!kIsWeb && io.Platform.isWindows) {
+                  savePDF(
+                      item); //your window page with window package import in it
+                }
+
+                // savePDF(item);
+                //       // _createPDF();
+                //       // Вызов функции для создания PDF-документа
+                //        savePDFWeb(item);
               },
               child: const Text('В PDF-формате'),
             ),
@@ -504,7 +635,7 @@ class _TablePageState extends State<TablePage> {
   }
 
   Widget _buildColumnLabel(String tooltip, IconData icon) {
-    return kIsWeb
+    return (kIsWeb || defaultTargetPlatform == TargetPlatform.windows)
         ? Center(
             child: Text(
               tooltip,
@@ -515,8 +646,134 @@ class _TablePageState extends State<TablePage> {
         : Icon(icon);
   }
 
+  List<DataColumn> buildDataColumns() {
+    List<DataColumn> columns = [
+      DataColumn(
+        label: _buildColumnLabel(
+            'Владелец', Icons.account_box),
+        tooltip: 'Владелец',
+        onSort: (columnIndex, ascending) {
+          setState(() {
+            _sortAscending = ascending;
+            _sortColumnIndex = columnIndex;
+            _sort((item) => item['name'], columnIndex,
+                ascending);
+          });
+        },
+      ),
+      DataColumn(
+        label:
+        _buildColumnLabel('Срок', Icons.date_range),
+        tooltip: 'срок',
+        onSort: (columnIndex, ascending) {
+          setState(() {
+            _sortAscending = ascending;
+            _sortColumnIndex = columnIndex;
+            _sort((item) => item['expiry_date'],
+                columnIndex, ascending);
+          });
+        },
+      ),
+      DataColumn(
+        label: _buildColumnLabel(
+            'Пропускная\nспособность',
+            Icons.network_check),
+        tooltip: 'Пропускная\nспособность',
+        onSort: (columnIndex, ascending) {
+          setState(() {
+            _sortAscending = ascending;
+            _sortColumnIndex = columnIndex;
+            _sort((item) => item['max_bandwidth'],
+                columnIndex, ascending);
+          });
+        },
+      ),
+      DataColumn(
+        label: _buildColumnLabel(
+            'Макс кол-во\nпользователей', Icons.people),
+        tooltip: 'Макс кол-во\nпользователей',
+        onSort: (columnIndex, ascending) {
+          setState(() {
+            _sortAscending = ascending;
+            _sortColumnIndex = columnIndex;
+            _sort((item) => item['max_users'],
+                columnIndex, ascending);
+          });
+        },
+      ),
+      DataColumn(
+        label: _buildColumnLabel(
+            'Макс кол-во сессий', Icons.account_tree),
+        tooltip: 'Макс кол-во сессий',
+        onSort: (columnIndex, ascending) {
+          setState(() {
+            _sortAscending = ascending;
+            _sortColumnIndex = columnIndex;
+            _sort((item) => item['max_vpn_sessions'],
+                columnIndex, ascending);
+          });
+        },
+      ),
+      DataColumn(
+        label: _buildColumnLabel('Тип лицензии',
+            Icons.format_list_numbered_rounded),
+        tooltip: 'Тип лицензии',
+        onSort: (columnIndex, ascending) {
+          setState(() {
+            _sortAscending = ascending;
+            _sortColumnIndex = columnIndex;
+            _sort((item) => item['license_type'],
+                columnIndex, ascending);
+          });
+        },
+      ),
+      DataColumn(
+        label: _buildColumnLabel('Лицензия',
+            Icons.text_fields),
+        tooltip: 'Лицензия',
+        onSort: (columnIndex, ascending) {
+          setState(() {
+            _sortAscending = ascending;
+            _sortColumnIndex = columnIndex;
+            _sort((item) => item['license_key'],
+                columnIndex, ascending);
+          });
+        },
+      ),
+      DataColumn(
+        label: _buildColumnLabel('Код активации',
+            Icons.password),
+        tooltip: 'Код активации',
+        onSort: (columnIndex, ascending) {
+          setState(() {
+            _sortAscending = ascending;
+            _sortColumnIndex = columnIndex;
+            _sort((item) => item['generate_key'],
+                columnIndex, ascending);
+          });
+        },
+      ),
+      // Другие DataColumn здесь...
+    ];
+
+    // Проверяем роль пользователя и добавляем колонку с кнопкой удаления, если роль не 'user'.
+    if (widget.userDto.role != 'user') {
+      columns.add(
+        DataColumn(
+          label: Icon(
+            Icons.delete_outline_outlined,
+            color: Colors.red,
+          ),
+        ),
+      );
+    }
+
+    return columns;
+  }
+
   @override
   Widget build(BuildContext context) {
+    bool shouldShowButtons = widget.userDto.role != "user";
     return WillPopScope(
       onWillPop: () async {
         return backButton(context);
@@ -586,201 +843,81 @@ class _TablePageState extends State<TablePage> {
                           columnSpacing: 1,
                           sortAscending: _sortAscending,
                           sortColumnIndex: _sortColumnIndex,
-                          columns: <DataColumn>[
-                            DataColumn(
-                              label: _buildColumnLabel(
-                                  'Владелец', Icons.account_box),
-                              tooltip: 'Владелец',
-                              onSort: (columnIndex, ascending) {
-                                setState(() {
-                                  _sortAscending = ascending;
-                                  _sortColumnIndex = columnIndex;
-                                  _sort((item) => item['name'], columnIndex,
-                                      ascending);
-                                });
-                              },
-                            ),
-                            DataColumn(
-                              label:
-                                  _buildColumnLabel('Срок', Icons.date_range),
-                              tooltip: 'срок',
-                              onSort: (columnIndex, ascending) {
-                                setState(() {
-                                  _sortAscending = ascending;
-                                  _sortColumnIndex = columnIndex;
-                                  _sort((item) => item['expiry_date'],
-                                      columnIndex, ascending);
-                                });
-                              },
-                            ),
-                            DataColumn(
-                              label: _buildColumnLabel(
-                                  'Пропускная\nспособность',
-                                  Icons.network_check),
-                              tooltip: 'Пропускная\nспособность',
-                              onSort: (columnIndex, ascending) {
-                                setState(() {
-                                  _sortAscending = ascending;
-                                  _sortColumnIndex = columnIndex;
-                                  _sort((item) => item['max_bandwidth'],
-                                      columnIndex, ascending);
-                                });
-                              },
-                            ),
-                            DataColumn(
-                              label: _buildColumnLabel(
-                                  'Макс кол-во\nпользователей', Icons.people),
-                              tooltip: 'Макс кол-во\nпользователей',
-                              onSort: (columnIndex, ascending) {
-                                setState(() {
-                                  _sortAscending = ascending;
-                                  _sortColumnIndex = columnIndex;
-                                  _sort((item) => item['max_users'],
-                                      columnIndex, ascending);
-                                });
-                              },
-                            ),
-                            DataColumn(
-                              label: _buildColumnLabel(
-                                  'Макс кол-во сессий', Icons.account_tree),
-                              tooltip: 'Макс кол-во сессий',
-                              onSort: (columnIndex, ascending) {
-                                setState(() {
-                                  _sortAscending = ascending;
-                                  _sortColumnIndex = columnIndex;
-                                  _sort((item) => item['max_vpn_sessions'],
-                                      columnIndex, ascending);
-                                });
-                              },
-                            ),
-                            DataColumn(
-                              label: _buildColumnLabel('Тип лицензии',
-                                  Icons.format_list_numbered_rounded),
-                              tooltip: 'Тип лицензии',
-                              onSort: (columnIndex, ascending) {
-                                setState(() {
-                                  _sortAscending = ascending;
-                                  _sortColumnIndex = columnIndex;
-                                  _sort((item) => item['license_type'],
-                                      columnIndex, ascending);
-                                });
-                              },
-                            ),
-                            DataColumn(
-                              label: _buildColumnLabel('Лицензия',
-                                  Icons.format_list_numbered_rounded),
-                              tooltip: 'Лицензия',
-                              onSort: (columnIndex, ascending) {
-                                setState(() {
-                                  _sortAscending = ascending;
-                                  _sortColumnIndex = columnIndex;
-                                  _sort((item) => item['license_key'],
-                                      columnIndex, ascending);
-                                });
-                              },
-                            ),
-                            DataColumn(
-                              label: _buildColumnLabel('Код активации',
-                                  Icons.format_list_numbered_rounded),
-                              tooltip: 'Код активации',
-                              onSort: (columnIndex, ascending) {
-                                setState(() {
-                                  _sortAscending = ascending;
-                                  _sortColumnIndex = columnIndex;
-                                  _sort((item) => item['generate_key'],
-                                      columnIndex, ascending);
-                                });
-                              },
-                            ),
-                            const DataColumn(
-                              label: Icon(
-                                Icons.delete_outline_outlined,
-                                color: Colors.red,
-                              ),
-                            ),
-                          ],
+                          columns: buildDataColumns(),
                           rows: (nameFilterController.text.isEmpty &&
                                   licenseTypeFilterController.text.isEmpty &&
                                   licenseNumberFilterController.text.isEmpty &&
                                   licenseKeyFilterController.text.isEmpty)
                               ? items.map(
                                   (item) {
-                                    return DataRow(
-                                      onSelectChanged: (selected) {
-                                        if (selected != null && selected) {
-                                          _showLicenseDetailsDialog(
-                                              context, item);
-                                        }
-                                      },
-                                      cells: <DataCell>[
-                                        DataCell(
-                                          Center(
-                                            child: Text(item['name']),
+                                    List<DataCell> cells = [
+                                      DataCell(
+                                        Center(
+                                          child: Text(item['name']),
+                                        ),
+                                      ),
+                                      DataCell(
+                                        Center(
+                                          child: Text(
+                                            item['expiry_date'].toString().isEmpty
+                                                ? 'бессрочно'
+                                                : item['expiry_date'].toString(),
                                           ),
                                         ),
-                                        DataCell(
-                                          Center(
-                                            child: Text(
-                                              item['expiry_date']
-                                                      .toString()
-                                                      .isEmpty
-                                                  ? 'бессрочно'
-                                                  : item['expiry_date']
-                                                      .toString(),
-                                            ),
+                                      ),
+                                      DataCell(
+                                        Center(
+                                          child: Text(
+                                            item['max_bandwidth'] == '0'
+                                                ? '∞' // or any other symbol or text
+                                                : item['max_bandwidth'].toString(),
                                           ),
                                         ),
-                                        DataCell(
-                                          Center(
-                                            child: Text(
-                                              item['max_bandwidth'] == '0'
-                                                  ? '∞' // or any other symbol or text
-                                                  : item['max_bandwidth']
-                                                      .toString(),
-                                            ),
+                                      ),
+                                      DataCell(
+                                        Center(
+                                          child: Text(
+                                            item['max_users'] == 0
+                                                ? '∞' // or any other symbol or text
+                                                : item['max_users'].toString(),
                                           ),
                                         ),
-                                        DataCell(
-                                          Center(
-                                            child: Text(
-                                              item['max_users'] == 0
-                                                  ? '∞' // or any other symbol or text
-                                                  : item['max_users']
-                                                      .toString(),
-                                            ),
+                                      ),
+                                      DataCell(
+                                        Center(
+                                          child: Text(
+                                            item['max_vpn_sessions'] == 0
+                                                ? '∞' // or any other symbol or text
+                                                : item['max_vpn_sessions'].toString(),
                                           ),
                                         ),
-                                        DataCell(
-                                          Center(
-                                            child: Text(
-                                              item['max_vpn_sessions'] == 0
-                                                  ? '∞' // or any other symbol or text
-                                                  : item['max_vpn_sessions']
-                                                      .toString(),
-                                            ),
+                                      ),
+                                      DataCell(
+                                        Center(
+                                          child: Text(
+                                            item['license_type'].toString(),
                                           ),
                                         ),
-                                        DataCell(
-                                          Center(
-                                            child: Text(
-                                              item['license_type'].toString(),
-                                            ),
+                                      ),
+                                      DataCell(
+                                        Center(
+                                          child: Text(
+                                            item['license_key'].toString(),
                                           ),
                                         ),
-                                        DataCell(
-                                          Center(
-                                            child: Text(
-                                              item['license_key'].toString(),
-                                            ),
+                                      ),
+                                      DataCell(
+                                        Center(
+                                          child: Text(
+                                            item['generate_key'].toString(),
                                           ),
                                         ),
-                                        DataCell(
-                                          Center(
-                                            child: Text(
-                                              item['generate_key'].toString(),
-                                            ),
-                                          ),
-                                        ),
+                                      ),
+                                    ];
+
+                                    // Добавляем DataCell с кнопкой удаления только если роль пользователя не "user"
+                                    if (widget.userDto.role != 'user') {
+                                      cells.add(
                                         DataCell(
                                           Center(
                                             child: ElevatedButton(
@@ -794,49 +931,116 @@ class _TablePageState extends State<TablePage> {
                                             ),
                                           ),
                                         ),
-                                      ],
-                                    );
-                                  },
-                                ).toList()
-                              : filteredItems.map(
-                                  (item) {
+                                      );
+                                    }
                                     return DataRow(
                                       onSelectChanged: (selected) {
                                         if (selected != null && selected) {
                                           _showLicenseDetailsDialog(
-                                              context, item);
+                                              context, item, widget.userDto);
                                         }
                                       },
-                                      cells: <DataCell>[
-                                        DataCell(
-                                          Text(item['name']),
+                                      cells: cells,
+
+
+
+                                    );
+
+                                  },
+                                ).toList()
+                              : filteredItems.map(
+                                  (item) {
+                                    List<DataCell> cells = [
+                                      DataCell(
+                                        Center(
+                                          child: Text(item['name']),
                                         ),
-                                        DataCell(Text(
-                                            item['expiry_date'].toString())),
-                                        DataCell(Text(
-                                            item['max_bandwidth'].toString())),
+                                      ),
+                                      DataCell(
+                                        Center(
+                                          child: Text(
+                                            item['expiry_date'].toString().isEmpty
+                                                ? 'бессрочно'
+                                                : item['expiry_date'].toString(),
+                                          ),
+                                        ),
+                                      ),
+                                      DataCell(
+                                        Center(
+                                          child: Text(
+                                            item['max_bandwidth'] == '0'
+                                                ? '∞' // or any other symbol or text
+                                                : item['max_bandwidth'].toString(),
+                                          ),
+                                        ),
+                                      ),
+                                      DataCell(
+                                        Center(
+                                          child: Text(
+                                            item['max_users'] == 0
+                                                ? '∞' // or any other symbol or text
+                                                : item['max_users'].toString(),
+                                          ),
+                                        ),
+                                      ),
+                                      DataCell(
+                                        Center(
+                                          child: Text(
+                                            item['max_vpn_sessions'] == 0
+                                                ? '∞' // or any other symbol or text
+                                                : item['max_vpn_sessions'].toString(),
+                                          ),
+                                        ),
+                                      ),
+                                      DataCell(
+                                        Center(
+                                          child: Text(
+                                            item['license_type'].toString(),
+                                          ),
+                                        ),
+                                      ),
+                                      DataCell(
+                                        Center(
+                                          child: Text(
+                                            item['license_key'].toString(),
+                                          ),
+                                        ),
+                                      ),
+                                      DataCell(
+                                        Center(
+                                          child: Text(
+                                            item['generate_key'].toString(),
+                                          ),
+                                        ),
+                                      ),
+                                    ];
+
+                                    // Добавляем DataCell с кнопкой удаления только если роль пользователя не "user"
+                                    if (widget.userDto.role != 'user') {
+                                      cells.add(
                                         DataCell(
-                                            Text(item['max_users'].toString())),
-                                        DataCell(Text(item['max_vpn_sessions']
-                                            .toString())),
-                                        DataCell(Text(
-                                            item['license_type'].toString())),
-                                        DataCell(Text(
-                                            item['license_key'].toString())),
-                                        DataCell(Text(
-                                            item['generate_key'].toString())),
-                                        DataCell(
-                                          ElevatedButton(
-                                            onPressed: () {
-                                              _deleteItem(item['id']);
-                                            },
-                                            child: const Icon(
-                                              Icons.delete,
-                                              color: Colors.white,
+                                          Center(
+                                            child: ElevatedButton(
+                                              onPressed: () {
+                                                _deleteItem(item['id']);
+                                              },
+                                              child: const Icon(
+                                                Icons.delete,
+                                                color: Colors.white,
+                                              ),
                                             ),
                                           ),
                                         ),
-                                      ],
+                                      );
+                                    }
+                                    return DataRow(
+                                      onSelectChanged: (selected) {
+                                        if (selected != null && selected) {
+                                          _showLicenseDetailsDialog(
+                                              context, item, widget.userDto);
+                                        }
+                                      },
+                                      cells: cells,
                                     );
                                   },
                                 ).toList(),
@@ -854,7 +1058,7 @@ class _TablePageState extends State<TablePage> {
                         ? items.map((item) {
                             return InkWell(
                               onTap: () {
-                                _showLicenseDetailsDialog(context, item);
+                                _showLicenseDetailsDialog(context, item, widget.userDto);
                               },
                               child: Card(
                                 child: Padding(
@@ -875,8 +1079,8 @@ class _TablePageState extends State<TablePage> {
                                           'тип лицензии: ${item['license_type']}'),
                                       Text(
                                           'лицензионный ключ: ${item['license_key']}'),
-                                      Text(
-                                          'ключ активации: ${item['generate_key']}'),
+                                      // Text(
+                                      //     'ключ активации: ${item['generate_key']}'),
                                       // Добавьте другие поля по мере необходимости
                                     ],
                                   ),
@@ -887,7 +1091,7 @@ class _TablePageState extends State<TablePage> {
                         : filteredItems.map((item) {
                             return InkWell(
                               onTap: () {
-                                _showLicenseDetailsDialog(context, item);
+                                _showLicenseDetailsDialog(context, item, widget.userDto);
                               },
                               child: Card(
                                 child: Padding(
@@ -908,8 +1112,8 @@ class _TablePageState extends State<TablePage> {
                                           'тип лицензии: ${item['license_type']}'),
                                       Text(
                                           'лицензионный ключ: ${item['license_key']}'),
-                                      Text(
-                                          'ключ активации: ${item['generate_key']}'),
+                                      // Text(
+                                      //     'ключ активации: ${item['generate_key']}'),
                                       // Добавьте другие поля по мере необходимости
                                     ],
                                   ),
@@ -992,7 +1196,7 @@ class _TablePageState extends State<TablePage> {
             ],
           ),
         ),
-        floatingActionButton: FloatingActionButton(
+         floatingActionButton: shouldShowButtons ? FloatingActionButton(
           onPressed: () {
             Navigator.of(context).pushReplacement(PageTransition(
               type: PageTransitionType.leftToRight,
@@ -1001,7 +1205,7 @@ class _TablePageState extends State<TablePage> {
           },
           backgroundColor: Colors.yellow,
           child: const Icon(Icons.add), // Цвет кнопки
-        ),
+        ): Container(),
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       ),
     );

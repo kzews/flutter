@@ -25,12 +25,21 @@ class _HomePageState extends State<HomePage> {
   final TextEditingController _licenseTypeController = TextEditingController();
   final TextEditingController _expiryDateController = TextEditingController();
   final TextEditingController _maxVpnSessionsController =
-      TextEditingController();
-  final TextEditingController _maxBandwidthController = TextEditingController();
-  final TextEditingController _maxUsersController = TextEditingController();
+      TextEditingController(text: '0');
+  final TextEditingController _maxBandwidthController =
+      TextEditingController(text: '0');
+  final TextEditingController _maxUsersController =
+      TextEditingController(text: '0');
+  final TextEditingController _keyController = TextEditingController();
 
   List<Map<String, dynamic>> items = [];
   DateTime? currentBackPressTime;
+  bool _increaseValue = false;
+  int _selectedValue = 0;
+
+  int _parseToInt(String? value) {
+    return value != null ? int.parse(value) : 0;
+  }
 
   @override
   void initState() {
@@ -68,12 +77,29 @@ class _HomePageState extends State<HomePage> {
           'max_vpn_sessions': int.parse(_maxVpnSessionsController.text),
           'max_bandwidth': _maxBandwidthController.text,
           'max_users': int.parse(_maxUsersController.text),
+          'key': _keyController.text,
         }),
       );
 
       if (response.statusCode == 201) {
         fetchItems(); // Обновите список после добавления элемента
         _formKey.currentState!.reset();
+
+        // Сбросить значения контроллеров текстовых полей на "0"
+        _maxVpnSessionsController.text = '0';
+        _maxBandwidthController.text = '0';
+        _maxUsersController.text = '0';
+        _expiryDateController.text = '';
+        // Сбросить значения контроллеров для "Владелец" и "Серийный номер"
+        _nameController.text = '';
+        _keyController.text = '';
+
+        // Сбросить значения для FormBuilderDropdown
+        setState(() {
+          _selectedValue = 0;
+          _increaseValue = false;
+          _licenseTypeController.text = _selectedValue.toString();
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             backgroundColor: Colors.green,
@@ -126,9 +152,15 @@ class _HomePageState extends State<HomePage> {
               child: Column(
                 children: [
                   FormBuilderTextField(
-                    name: 'name',
+                    name: 'Владелец',
                     controller: _nameController,
                     decoration: const InputDecoration(labelText: 'Владелец'),
+                  ),
+                  FormBuilderTextField(
+                    name: 'Серийный номер',
+                    controller: _keyController,
+                    decoration:
+                        const InputDecoration(labelText: 'Серийный номер'),
                   ),
                   FormBuilderDropdown(
                     name: 'license_type',
@@ -161,8 +193,30 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ],
                     onChanged: (value) {
-                      // Обработка выбора значения
-                      _licenseTypeController.text = value.toString();
+                      setState(() {
+                        _selectedValue = value ?? 0;
+                        if (_increaseValue) {
+                          _selectedValue += 100;
+                        }
+                        _licenseTypeController.text = _selectedValue.toString();
+                      });
+                    },
+                  ),
+                  CheckboxListTile(
+                    title: Text('Без физического источника случайности'),
+                    contentPadding: EdgeInsets.zero,
+                    value: _increaseValue,
+                    onChanged: (newValue) {
+                      setState(() {
+                        _increaseValue = newValue!;
+                        if (_increaseValue) {
+                          _selectedValue += 100;
+                        } else {
+                          _selectedValue -=
+                              100; // Уменьшаем значение на 100, если чекбокс был отключен
+                        }
+                        _licenseTypeController.text = _selectedValue.toString();
+                      });
                     },
                   ),
                   Row(
@@ -227,7 +281,7 @@ class _HomePageState extends State<HomePage> {
                       builder: (context) => TablePage(userDto: widget.userDto)),
                 );
               },
-              child: const Text('переход к таблице'),
+              child: const Text('Переход к таблице'),
             ),
           ],
         ),

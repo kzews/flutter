@@ -3,6 +3,7 @@ import 'dart:convert';
 // import 'dart:html';
 
 import 'package:dio/dio.dart' as Dio;
+import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart' as Storage;
 
 import '../environment.dart';
@@ -14,7 +15,6 @@ final storage = Storage.FlutterSecureStorage();
 // void saveTokenWeb(String token) {
 //   window.localStorage['token'] = token;
 // }
-
 
 // Получение токена из localStorage
 // String? getTokenWeb() {
@@ -31,9 +31,10 @@ Future<String?> getToken() async {
   return await storage.read(key: 'token');
 }
 
-Future<UserDto> login(UserDto userDto) async {
+Future<UserDto> login(BuildContext context, UserDto userDto) async {
   if (USE_FAKE_AUTH_API) {
-    return UserDto(login: 'kirill99', role: 'admin', password: 'kirill99');
+    return UserDto(
+        login: 'kirill99', role: 'admin', password: 'kirill99', token: null);
   }
 
   Dio.Dio dio = Dio.Dio();
@@ -43,6 +44,13 @@ Future<UserDto> login(UserDto userDto) async {
   } catch (e) {
     // Обработка ошибки - сервер не доступен
     print('Сервер не доступен: $e');
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.red,
+        content: Text('Сервер недоступен'),
+        duration: Duration(seconds: 2),
+      ),
+    );
     throw Exception('Сервер не доступен');
   }
 
