@@ -159,7 +159,8 @@ class AppDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    bool shouldShowButtons = userDto.role != "user";
+    bool isAdmin = userDto.role == "admin";
+    bool isUserOrAdmin = userDto.role == "user" || isAdmin;
     return Drawer(
       child: ListView(
         padding: EdgeInsets.zero,
@@ -176,7 +177,7 @@ class AppDrawer extends StatelessWidget {
               ),
             ),
           ),
-          shouldShowButtons ? ListTile(
+          isUserOrAdmin ? ListTile(
             title: const Text('Главная'),
             onTap: () {
               Navigator.of(context).pushReplacement(PageTransition(
@@ -185,7 +186,7 @@ class AppDrawer extends StatelessWidget {
               ));
             },
           ): Container(),
-          shouldShowButtons ? ListTile(
+          isAdmin ? ListTile(
             title: const Text('Пользователи'),
             onTap: () {
               Navigator.of(context).pushReplacement(PageTransition(
@@ -194,7 +195,7 @@ class AppDrawer extends StatelessWidget {
               ));
             },
           ): Container(),
-          shouldShowButtons ? ListTile(
+          isAdmin ? ListTile(
             title: const Text('Добавить пользователя'),
             onTap: () {
               Navigator.of(context).pushReplacement(PageTransition(
@@ -212,7 +213,7 @@ class AppDrawer extends StatelessWidget {
               ));
             },
           ),
-          shouldShowButtons ? ListTile(
+          isUserOrAdmin ? ListTile(
             title: const Text('Добавить лицензию'),
             onTap: () {
               Navigator.of(context).pushReplacement(PageTransition(

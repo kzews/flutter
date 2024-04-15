@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 
 import 'package:dio/dio.dart' as Dio;
 import 'package:flutter/foundation.dart';
@@ -54,6 +55,33 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  Future<void> _saveNewApiUrl(String newUrl) async {
+    try {
+      var currentDir = Directory.current;
+      print('Current directory: $currentDir');
+
+      // Читаем содержимое файла environment.dart
+
+      var file = File('lib/environment.dart');
+      var lines = await file.readAsLines();
+
+      // Ищем строку, содержащую объявление API_URL
+      for (var i = 0; i < lines.length; i++) {
+        if (lines[i].contains('var API_URL')) {
+          // Нашли строку с объявлением API_URL, заменяем ее на новое значение
+          lines[i] = 'var API_URL = \'$newUrl\';';
+          break; // Выходим из цикла, так как строка найдена
+        }
+      }
+
+      // Перезаписываем файл с обновленными данными
+      await file.writeAsString(lines.join('\n'));
+    } catch (e) {
+      // Обрабатываем возможные ошибки записи в файл
+      print('Error saving API_URL to environment.dart: $e');
+    }
+  }
+
   Future<void> verifyToken(String token) async {
     Dio.Dio dio = Dio.Dio();
     // Если сервер доступен, отправляем запрос на аутентификацию
@@ -71,24 +99,24 @@ class _LoginPageState extends State<LoginPage> {
 
         // Если токен верифицирован успешно, создаем объект userDto
         UserDto userDto = UserDto.fromJson(jsonDecode(response.data));
-        bool shouldShowButtons = userDto.role != "user";
+        // bool isAdmin = userDto.role == "admin";
+        // bool isUserOrAdmin = userDto.role == "user" || isAdmin;
         // Инициируем переход на страницу Home1Page с передачей userDto
-        shouldShowButtons ? Navigator.of(context).pushReplacement(
-          MaterialPageRoute(
-            builder: (context) => Home1Page(userDto: userDto),
-          ),
-        ): Navigator.of(context).pushReplacement(
+        // isUserOrAdmin ? Navigator.of(context).pushReplacement(
+        //   MaterialPageRoute(
+        //     builder: (context) => Home1Page(userDto: userDto),
+        //   ),
+        // ): Navigator.of(context).pushReplacement(
           MaterialPageRoute(
             builder: (context) => TablePage(userDto: userDto),
-          ),
-        );
+          );
       } else {
         // Обработка других статусов ответа (например, когда токен просрочен или невалиден)
         // Возможно, здесь вы захотите отобразить сообщение об ошибке или выполнить другие действия
       }
-    } on Dio.DioException catch (ex) {
-      print(ex);
-      throw ex;
+    } on Dio.DioException {
+      // print(ex);
+      rethrow;
     }
   }
 
@@ -175,8 +203,9 @@ class _LoginPageState extends State<LoginPage> {
                             );
                             login(context, userDto).then(
                                   (value) async {
-                                    bool shouldShowButtons = userDto.role != "user";
-                                shouldShowButtons ? Navigator.of(context).pushReplacement(
+                                    bool isAdmin = userDto.role == "admin";
+                                    // bool isUserOrAdmin = userDto.role == "user" || isAdmin;
+                                    isAdmin ? Navigator.of(context).pushReplacement(
                                   PageTransition(
                                     type: PageTransitionType.fade,
                                     child: Home1Page(userDto: userDto),
@@ -216,8 +245,11 @@ class _LoginPageState extends State<LoginPage> {
                         suffixIcon: IconButton(
                           icon: Icon(Icons.save),
                           onPressed: () {
+
+
                             // Сохранение нового значения API_URL
                             API_URL = _apiUrl;
+                            _saveNewApiUrl(_apiUrl);
                             // Сохранение нового значения API_URL в environment.dart
                           },
                         ),
@@ -226,11 +258,28 @@ class _LoginPageState extends State<LoginPage> {
                   )
                       : SizedBox(
                     width: 300,
-                    child: Text(
-                      _apiUrl,
-                      style: TextStyle(fontSize: 16),
+                    child: TextField(
+                      onChanged: (value) {
+                        setState(() {
+                          _apiUrl = value;
+                        });
+                      },
+                      decoration: InputDecoration(
+                        labelText: 'API_URL',
+                        hintText: API_URL,
+                        border: OutlineInputBorder(),
+                        suffixIcon: IconButton(
+                          icon: Icon(Icons.save),
+                          onPressed: () {
+                            // Сохранение нового значения API_URL
+                            API_URL = _apiUrl;
+                            _saveNewApiUrl(_apiUrl);
+                            // Сохранение нового значения API_URL в environment.dart
+                          },
+                        ),
+                      ),
                     ),
-                  ),
+                  )
                 ),
               ],
             ),

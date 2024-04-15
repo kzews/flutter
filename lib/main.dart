@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
           ),
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.red, // Зеленый цвет для кнопки
+              backgroundColor: Colors.greenAccent, // Зеленый цвет для кнопки
               elevation: 0, // Высота тени кнопки
               shape: RoundedRectangleBorder(
                 borderRadius:

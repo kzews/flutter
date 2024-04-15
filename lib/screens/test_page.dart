@@ -37,7 +37,8 @@ class _Home1PageState extends State<Home1Page> {
     double buttonRadius = screenHeight * 0.1; // 5% ширины экрана
     double bottomPadding =
         MediaQuery.of(context).size.height * 0.05; // 5% высоты экрана
-    bool shouldShowButtons = widget.userDto.role != "user";
+    bool isAdmin = widget.userDto.role == "admin";
+    bool isUserOrAdmin = widget.userDto.role == "user" || isAdmin;
 
     return WillPopScope(
       
@@ -56,12 +57,12 @@ class _Home1PageState extends State<Home1Page> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      shouldShowButtons ? HoverButton(context, Colors.red, Icons.groups_outlined,
+                      isAdmin ? HoverButton(context, Colors.red, Icons.groups_outlined,
                           () {
                         _navigateToPage(context, Colors.red);
                       }): Container(),
                       SizedBox(width: screenWidth * 0.07),
-                      shouldShowButtons ? HoverButton(context, Colors.lightGreen, Icons.add_card,
+                      isUserOrAdmin ? HoverButton(context, Colors.lightGreen, Icons.add_card,
                           () {
                         _navigateToPage(context, Colors.lightGreen);
                       }): Container(),
@@ -76,7 +77,7 @@ class _Home1PageState extends State<Home1Page> {
                         _navigateToPage(context, Colors.blue);
                       }),
                       SizedBox(width: screenWidth * 0.07),
-                      shouldShowButtons ? HoverButton(
+                      isAdmin ? HoverButton(
                           context, Colors.yellow, Icons.person_add_alt_rounded,
 
                           () {

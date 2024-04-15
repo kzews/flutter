@@ -100,7 +100,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   DropdownButtonFormField<String>(
                     decoration: const InputDecoration(labelText: 'Роль'),
                     value: selectedRole,
-                    items: ['admin', 'user'].map((role) {
+                    items: ['admin', 'user', 'guest'].map((role) {
                       return DropdownMenuItem<String>(
                         value: role,
                         child: Text(role),

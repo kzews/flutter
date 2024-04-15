@@ -49,6 +49,8 @@ dependencies:
   universal_html: ^2.2.4
   syncfusion_flutter_pdf: ^20.3.49
 
+
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
