@@ -5,7 +5,7 @@ import 'package:dio/dio.dart' as Dio;
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttersrc/screens/table.dart';
-import 'package:fluttersrc/screens/test_page.dart';
+import 'package:fluttersrc/screens/routes_page.dart';
 import 'package:page_transition/page_transition.dart';
 
 import '../environment.dart';
