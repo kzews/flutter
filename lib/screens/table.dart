@@ -1,9 +1,7 @@
 import 'dart:convert';
-import 'dart:math';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:fluttersrc/appBar.dart';
 import 'package:http/http.dart' as http;
 import 'package:page_transition/page_transition.dart';
@@ -11,8 +9,10 @@ import 'package:page_transition/page_transition.dart';
 import '../environment.dart';
 import '../objects/userDto.dart';
 import '../services/backButton.dart';
+import '../services/tableServices/changeItem.dart';
 import '../services/tableServices/deleteItem.dart';
 import '../services/tableServices/fetchItemsPage.dart';
+import '../services/tableServices/sendSelectedItemsToServer.dart';
 import '../services/tableServices/showLicenseDetailsDialog.dart';
 import 'add_license.dart';
 
@@ -51,13 +51,15 @@ final List<IconData> columnIcons = [
 ];
 
 class _TablePageState extends State<TablePage> {
-
-
-
   List<Map<String, dynamic>> filteredItems = [];
   bool _sortAscending = true;
   int _sortColumnIndex = 0;
   DateTime? currentBackPressTime;
+  bool _increaseValue = false;
+  bool isChecked = false;
+  Map<int, bool> checkBoxStates =
+      {}; // int - индекс строки, bool - состояние флажка
+  List<int> selectedIds = [];
 
   TextEditingController nameFilterController = TextEditingController();
   TextEditingController licenseTypeFilterController = TextEditingController();
@@ -72,690 +74,11 @@ class _TablePageState extends State<TablePage> {
     fetchItemsPage(context, (List<Map<String, dynamic>> itemsList) {
       setState(() {
         items = itemsList;
+        for (int i = 0; i < items.length; i++) {
+          checkBoxStates[i] = false;
+        }
       });
     });
-  }
-
-  // Future<void> savePDFWeb(Map<String, dynamic> licenseData) async {
-  //   final pdfDoc = pdf.Document();
-  //   final ttf = await rootBundle.load("fonts/Roboto-Regular.ttf");
-  //
-  //   pdfDoc.addPage(
-  //     pdf.Page(
-  //       build: (context) => pdfWidgets.Center(
-  //         child: pdfWidgets.Column(
-  //           mainAxisAlignment: pdfWidgets.MainAxisAlignment.center,
-  //           children: [
-  //             pdfWidgets.Text(
-  //               'Информация о лицензии',
-  //               style: pdfWidgets.TextStyle(
-  //                 fontSize: 20,
-  //                 font: pdfWidgets.Font.ttf(ttf),
-  //               ),
-  //             ),
-  //             pdfWidgets.SizedBox(height: 20),
-  //             pdfWidgets.Text(
-  //               'Владелец: ${licenseData['name']}',
-  //               style: pdfWidgets.TextStyle(
-  //                 font: pdfWidgets.Font.ttf(ttf),
-  //               ),
-  //             ),
-  //             pdfWidgets.Text(
-  //               'срок: ${licenseData['expiry_date']}',
-  //               style: pdfWidgets.TextStyle(
-  //                 font: pdfWidgets.Font.ttf(ttf),
-  //               ),
-  //             ),
-  //             pdfWidgets.Text(
-  //               'Пропускная способность: ${licenseData['max_bandwidth'] == '0' ? 'без ограничений' : licenseData['max_bandwidth']}',
-  //               style: pdfWidgets.TextStyle(
-  //                 font: pdfWidgets.Font.ttf(ttf),
-  //               ),
-  //             ),
-  //             pdfWidgets.Text(
-  //               'max_users: ${licenseData['max_users'] == '0' ? 'без ограничений' : licenseData['max_users']}',
-  //               style: pdfWidgets.TextStyle(
-  //                 font: pdfWidgets.Font.ttf(ttf),
-  //               ),
-  //             ),
-  //             pdfWidgets.Text(
-  //               'License: ${licenseData['license_key']}',
-  //               style: pdfWidgets.TextStyle(
-  //                 font: pdfWidgets.Font.ttf(ttf),
-  //               ),
-  //             ),
-  //           ],
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  //
-  //   final bytes = await pdfDoc.save();
-  //   final blob = universal.Blob([Uint8List.fromList(bytes)]);
-  //   final url = universal.Url.createObjectUrlFromBlob(blob);
-  //   // final anchor = universal.AnchorElement(href: url)
-  //   //   ..setAttribute("download", "license_data.pdf")
-  //   //   ..click();
-  //
-  //   universal.Url.revokeObjectUrl(url);
-  // }
-
-  // Future<void> savePDF(Map<String, dynamic> licenseData) async {
-  //   final pdfDoc = pdf.Document();
-  //   final ttf = await rootBundle.load("fonts/Roboto-Regular.ttf");
-  //
-  //   pdfDoc.addPage(
-  //     pdf.Page(
-  //       build: (context) => pdf.Center(
-  //         child: pdf.Column(
-  //           mainAxisAlignment: pdf.MainAxisAlignment.center,
-  //           children: [
-  //             pdf.Text(
-  //               'Информация о лицензии',
-  //               style: pdf.TextStyle(fontSize: 20, font: pdf.Font.ttf(ttf)),
-  //             ),
-  //             pdf.SizedBox(height: 20),
-  //             pdf.Text(
-  //               'Владелец: ${licenseData['name']}',
-  //               style: pdf.TextStyle(font: pdf.Font.ttf(ttf)),
-  //             ),
-  //             pdf.Text(
-  //               'срок: ${licenseData['expiry_date']}',
-  //               style: pdf.TextStyle(font: pdf.Font.ttf(ttf)),
-  //             ),
-  //             pdf.Text(
-  //               'Пропускная способность: ${licenseData['max_bandwidth'] == '0' ? 'без ограничений' : licenseData['max_bandwidth']}',
-  //               style: pdf.TextStyle(font: pdf.Font.ttf(ttf)),
-  //             ),
-  //             pdf.Text(
-  //               'max_users: ${licenseData['max_users'] == '0' ? 'без ограничений' : licenseData['max_users']}',
-  //               style: const pdf.TextStyle(),
-  //             ),
-  //             pdf.Text(
-  //               'License: ${licenseData['license_key']}',
-  //               style: const pdf.TextStyle(),
-  //             ),
-  //             // Добавьте остальную информацию о лицензии здесь...
-  //           ],
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  //
-  //   final output = await getTemporaryDirectory();
-  //   final fileName = "${output.path}/${new Uuid().v1()}.pdf";
-  //   List<int> bytes = await pdfDoc.save(); // Ждем завершения сохранения PDF
-  //   final file = io.File(fileName);
-  //   await file
-  //       .writeAsBytes(bytes.toList()); // Преобразуем Uint8List в List<int>
-  //   OpenFile.open(fileName);
-  // }
-
-  // Future<void> _showLicenseDetailsDialog(
-  //     BuildContext context, Map<String, dynamic> item, UserDto userDto) async {
-  //   // bool shouldShowButtons = widget.userDto.role != "user";
-  //   await showDialog(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       bool isActivationButtonVisible = !(item['license_type'] == 1 ||
-  //           item['license_type'] == 2 ||
-  //           item['license_type'] == 3);
-  //       // return Scaffold(
-  //       //   body:
-  //       return AlertDialog(
-  //         scrollable: true,
-  //         // insetPadding: EdgeInsets.all(300),
-  //         title: const Text('Данные лицензии'),
-  //
-  //         content: Column(
-  //           crossAxisAlignment: CrossAxisAlignment.start,
-  //           children: [
-  //             Text('Владелец: ${item['name']}'),
-  //             Text('УНН/УНП: ${item['UNNorUNP']}'),
-  //             Text('Дата отгрузки: ${item['date_shipping']}'),
-  //             Text('№ договора: ${item['dogovor']}'),
-  //             Text('Серийный номер: ${item['key']}'),
-  //             SelectableText(
-  //               'Лицензия: ${item['license_key']}',
-  //               onTap: () {
-  //                 Clipboard.setData(ClipboardData(text: item['license_key']));
-  //                 ScaffoldMessenger.of(context).showSnackBar(
-  //                   const SnackBar(
-  //                     behavior: SnackBarBehavior.floating,
-  //                     margin: EdgeInsets.all(150),
-  //                     shape: RoundedRectangleBorder(
-  //                       borderRadius: BorderRadius.all(Radius.circular(20)),
-  //                     ),
-  //                     backgroundColor: Colors.grey,
-  //                     content: Text('текст скопирован'),
-  //                     duration: Duration(seconds: 1),
-  //                   ),
-  //                 );
-  //               },
-  //             ),
-  //             Text(
-  //                 'Срок: ${item['expiry_date'].toString().isEmpty ? 'бессрочно' : item['expiry_date']}'),
-  //             Text(
-  //                 'Пропускная способность: ${item['max_bandwidth'] == '0' ? 'без ограничений' : item['max_bandwidth']}'),
-  //             Text(
-  //                 'Максимальное количество пользователей: ${item['max_users'] == 0 ? 'без ограничений' : item['max_users']}'),
-  //             Text(
-  //                 'Максимальное количество сессий: ${item['max_vpn_sessions'] == 0 ? 'без ограничений' : item['max_vpn_sessions']}'),
-  //             Text(
-  //                 'Тип лицензии: ${item['license_type'] == 1 ? 'сервер' : item['license_type'] == 3 ? 'клиент' : item['license_type'] == 2 ? 'мост' : item['license_type']}'),
-  //             Text('Номер лицензии: ${item['license_number']}'),
-  //             Text(
-  //                 'Создатель: ${item['nameCreator'] ?? 'неизвестно'}'),
-  //             Text(
-  //                 'Дата создания: ${item['DateCtrate'] ?? 'неизвестно'}'),
-  //
-  //             if (userDto.role != 'guest') ...[
-  //               Text(
-  //                 'Пароль BIOS: ${item['passwordBIOS'] ?? 'не задано'}',
-  //               ),
-  //               Text(
-  //                 'Пароль Root: ${item['passwordRoot'] ?? 'не задано'}',
-  //               ),
-  //               Text(
-  //                 'Примечание: ${item['remark'] ?? ''}',
-  //               ),
-  //             ],
-  //           ],
-  //         ),
-  //         actions: [
-  //           TextButton(
-  //             onPressed: () {
-  //               if (kIsWeb) {
-  //                 savePDFWeb(
-  //                     item); //your web page with web package import in it
-  //               } else if (!kIsWeb && io.Platform.isWindows) {
-  //                 savePDF(
-  //                     item); //your window page with window package import in it
-  //               }
-  //             },
-  //             child: const Text('В PDF-формате'),
-  //           ),
-  //           Visibility(
-  //             visible: isActivationButtonVisible,
-  //             child: TextButton(
-  //               onPressed: () {
-  //                 showActivationDialog(context, item);
-  //               },
-  //               child: const Text('Активировать лицензию'),
-  //             ),
-  //           ),
-  //           TextButton(
-  //             onPressed: () {
-  //               sendItemIdToServer(context, item['id']); // Send item ID to server
-  //             },
-  //             child: const Text('Получить файл с сервера'), // New button
-  //           ),
-  //           TextButton(
-  //             onPressed: () {
-  //               showHistoryDialog(context, item['id']);
-  //             },
-  //             child: const Text('Посмотреть историю изменений'),
-  //           ),
-  //           TextButton(
-  //             onPressed: () {
-  //               Navigator.of(context).pop();
-  //             },
-  //             child: const Text('OK'),
-  //           ),
-  //         ],
-  //       );
-  //       // );
-  //     },
-  //   );
-  // }
-
-
-
-
-
-  // Future<void> _showActivationDialog(Map<String, dynamic> item) async {
-  //   String activationCode = '';
-  //
-  //   await showDialog(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return AlertDialog(
-  //         scrollable: true,
-  //         // insetPadding: EdgeInsets.all(400),
-  //         title: const Text('Введите код активации'),
-  //         content: Column(
-  //           children: [
-  //             TextField(
-  //               onChanged: (value) {
-  //                 activationCode = value;
-  //               },
-  //               decoration: const InputDecoration(
-  //                 labelText: 'Код установки',
-  //               ),
-  //             ),
-  //           ],
-  //         ),
-  //         actions: [
-  //           TextButton(
-  //             onPressed: () {
-  //               _activateLicense(item['license_type'], item['license_number'],
-  //                   activationCode);
-  //
-  //               Navigator.of(context).pop();
-  //             },
-  //             child: const Text('Активировать'),
-  //           ),
-  //           TextButton(
-  //             onPressed: () {
-  //               Navigator.of(context).pop();
-  //             },
-  //             child: const Text('Отмена'),
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  // }
-  //
-  // Future<void> _activateLicense(
-  //     int licenseType, int licenseNumber, String activationCode) async {
-  //   final response = await http.post(
-  //     Uri.parse('$API_URL/api/createCode'),
-  //     headers: <String, String>{
-  //       'Content-Type': 'application/json',
-  //     },
-  //     body: jsonEncode(<String, String>{
-  //       'install_key': activationCode,
-  //       // 'password': password,
-  //       'license_type': licenseType.toString(),
-  //       'license_number': licenseNumber.toString(),
-  //     }),
-  //   );
-  //
-  //   if (response.statusCode == 200) {
-  //     final Map<String, dynamic> responseData = json.decode(response.body);
-  //     showDialog(
-  //       context: context,
-  //       builder: (BuildContext context) {
-  //         return AlertDialog(
-  //           insetPadding: const EdgeInsets.all(400),
-  //           title: const Text('Успешно активировано'),
-  //           content: Text('Код подтверждения: ${responseData['install_code']}'),
-  //           actions: [
-  //             TextButton(
-  //               onPressed: () {
-  //                 Navigator.of(context).pop();
-  //               },
-  //               child: const Text('OK'),
-  //             ),
-  //           ],
-  //         );
-  //       },
-  //     );
-  //   } else {
-  //     if (kDebugMode) {
-  //       print(response.statusCode);
-  //     }
-  //     if (response.statusCode == 400) {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         const SnackBar(
-  //           backgroundColor: Colors.red,
-  //           content: Text('Ошибка'),
-  //           duration: Duration(seconds: 2),
-  //         ),
-  //       );
-  //     }
-  //   }
-  // }
-
-  // Future<void> _deleteItem(int itemId) async {
-  //   bool confirmDelete = await showDialog(
-  //     context: context,
-  //     builder: (BuildContext context) {
-  //       return AlertDialog(
-  //         title: const Text('Подтверждение удаления'),
-  //         content: const Text('Вы уверены, что хотите удалить запись?'),
-  //         actions: [
-  //           TextButton(
-  //             onPressed: () {
-  //               Navigator.of(context)
-  //                   .pop(true); // Пользователь подтвердил удаление
-  //             },
-  //             child: const Text('Да'),
-  //           ),
-  //           TextButton(
-  //             onPressed: () {
-  //               Navigator.of(context)
-  //                   .pop(false); // Пользователь отменил удаление
-  //             },
-  //             child: const Text('Нет'),
-  //           ),
-  //         ],
-  //       );
-  //     },
-  //   );
-  //
-  //   if (confirmDelete) {
-  //     final response = await http.delete(
-  //       Uri.parse('$API_URL/api/items/$itemId'),
-  //     );
-  //
-  //     if (response.statusCode == 200) {
-  //       await fetchItemsPage(context);
-  //
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         const SnackBar(
-  //           backgroundColor: Colors.green,
-  //           content: Text('Элемент успешно удален'),
-  //           duration: Duration(seconds: 2),
-  //         ),
-  //       );
-  //     } else {
-  //       showDialog(
-  //         context: context,
-  //         builder: (BuildContext context) {
-  //           return AlertDialog(
-  //             title: const Text('Ошибка удаления'),
-  //             content: const Text('Не удалось удалить элемент.'),
-  //             actions: [
-  //               TextButton(
-  //                 onPressed: () {
-  //                   Navigator.of(context).pop();
-  //                 },
-  //                 child: const Text('OK'),
-  //               ),
-  //             ],
-  //           );
-  //         },
-  //       );
-  //     }
-  //   }
-  // }
-
-  Future<void> _changeItem(int itemId, Map<String, dynamic> item) async {
-    String generatePassword() {
-      final random = Random.secure();
-      const alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
-      const numbers = '0123456789';
-
-      // Генерируем пароль, включая хотя бы одну букву и одну цифру
-      String password = alphabet[random.nextInt(alphabet.length)] +
-          numbers[random.nextInt(numbers.length)];
-
-      // Добавляем еще 4 случайных символа
-      for (int i = 0; i < 4; i++) {
-        String charSet = random.nextBool() ? alphabet : numbers;
-        password += charSet[random.nextInt(charSet.length)];
-      }
-
-      // Перемешиваем символы пароля
-      List<String> passwordCharacters = password.split('');
-      passwordCharacters.shuffle();
-
-      return passwordCharacters.join('');
-    }
-
-    // Создаем глобальный ключ для доступа к состоянию формы
-
-
-    // Отображаем диалоговое окно для ввода данных
-    Map<String, String?>? newData = await showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        // Создаем текстовые контроллеры для полей ввода
-        TextEditingController nameController = TextEditingController(text: '${item['name']}');
-        TextEditingController keyController = TextEditingController(text: '${item['key']}');
-        TextEditingController dateShippingController = TextEditingController(text: '${item['date_shipping']}');
-        TextEditingController dogovorController = TextEditingController(text: '${item['dogovor']}');
-        TextEditingController unnOrUnpController = TextEditingController(text: '${item['UNNorUNP']}');
-        TextEditingController remarkController = TextEditingController(text: '${item['remark']}');
-        final TextEditingController _passwordBiosController = TextEditingController();
-        final TextEditingController _passwordRootController = TextEditingController();
-        final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>();
-
-
-        return AlertDialog(
-          title: const Text('Изменение элемента'),
-          content: SingleChildScrollView(
-            child: FormBuilder(
-              key: _formKey,
-              child: Column(
-                children: [
-                  TextField(
-                    controller: nameController,
-                    decoration: const InputDecoration(labelText: 'Владелец'),
-                  ),
-                  TextField(
-                    controller: unnOrUnpController,
-                    decoration: const InputDecoration(labelText: 'УНН/УНП'),
-                  ),
-                  TextField(
-                    controller: dateShippingController,
-                    decoration: const InputDecoration(labelText: 'Дата отгрузки'),
-                  ),
-                  TextField(
-                    controller: dogovorController,
-                    decoration: const InputDecoration(labelText: 'Договор'),
-                  ),
-                  TextField(
-                    controller: keyController,
-                    decoration: const InputDecoration(labelText: 'Серийный номер'),
-                  ),
-                  FormBuilderTextField(
-                    name: 'Пароль BIOS',
-                    controller: _passwordBiosController,
-                    decoration: InputDecoration(
-                      labelText: 'Пароль BIOS',
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.lock),
-                        onPressed: () {
-                          setState(() {
-                            _passwordBiosController.text = generatePassword();
-                          });
-                        },
-                      ),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Пароль BIOS не может быть пустым';
-                      } else if (value.length < 6) {
-                        return 'Пароль BIOS должен содержать не менее 6 символов';
-                      } else if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d).+$').hasMatch(value)) {
-                        return 'Пароль BIOS должен содержать как минимум одну букву и одну цифру';
-                      }
-                      return null;
-                    },
-                  ),
-                  FormBuilderTextField(
-                    name: 'Пароль ROOT',
-                    controller: _passwordRootController,
-                    decoration: InputDecoration(
-                      labelText: 'Пароль ROOT',
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.lock),
-                        onPressed: () {
-                          setState(() {
-                            _passwordRootController.text = generatePassword();
-                          });
-                        },
-                      ),
-                    ),
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Пароль ROOT не может быть пустым';
-                      } else if (value.length < 6) {
-                        // print('Пароль ROOT должен содержать не менее 6 символов');
-                        return 'Пароль ROOT должен содержать не менее 6 символов';
-                      } else if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d).+$').hasMatch(value)) {
-                        return 'Пароль ROOT должен содержать как минимум одну букву и одну цифру';
-                      }
-                      return null;
-                    },
-                  ),
-                  TextField(
-                    controller: remarkController,
-                    decoration: const InputDecoration(labelText: 'Примечание'),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                if (_formKey.currentState!.validate()) {
-                  // Прошли валидацию
-                  Navigator.of(context).pop({
-                    'name': nameController.text,
-                    'UNNorUNP': unnOrUnpController.text,
-                    'date_shipping': dateShippingController.text,
-                    'dogovor': dogovorController.text,
-                    'key': keyController.text,
-                    'passwordBIOS': _passwordBiosController.text,
-                    'passwordRoot': _passwordRootController.text,
-                    'remark': remarkController.text,
-                  });
-                }
-                // print(_formKey.currentState!.validate().toString().toString());
-                // print('bad validation');
-              },
-              child: const Text('Сохранить'),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(null);
-              },
-              child: const Text('Отмена'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (newData != null) {
-      final response = await http.put(
-        Uri.parse('$API_URL/api/items/$itemId'),
-        body: jsonEncode(newData),
-        headers: {'Content-Type': 'application/json'},
-      );
-
-      if (response.statusCode == 200) {
-        await   fetchItemsPage(context, (List<Map<String, dynamic>> itemsList) {
-          setState(() {
-            items = itemsList;
-          });
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            backgroundColor: Colors.green,
-            content: Text('Элемент успешно изменен'),
-            duration: Duration(seconds: 2),
-          ),
-        );
-      } else {
-        showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return AlertDialog(
-              title: const Text('Ошибка изменения'),
-              content: const Text('Не удалось изменить элемент.'),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('OK'),
-                ),
-              ],
-            );
-          },
-        );
-      }
-    }
-  }
-
-
-  // Future<void> fetchItemsPage() async {
-  //   try {
-  //     final response = await http.get(Uri.parse(
-  //         '$API_URL/api/fetchItems?page=$currentPage&size=$pageSize'));
-  //
-  //     if (response.statusCode == 200) {
-  //       // ScaffoldMessenger.of(context).showSnackBar(
-  //       //   const SnackBar(
-  //       //     backgroundColor: Colors.green,
-  //       //     content: Text('Загружено успешно'),
-  //       //     duration: Duration(seconds: 2), // Длительность отображения Snackbar
-  //       //   ),
-  //       // );
-  //       final List<dynamic> responseData = json.decode(response.body);
-  //       final List<Map<String, dynamic>> itemsList =
-  //           List<Map<String, dynamic>>.from(responseData);
-  //
-  //       setState(() {
-  //         items = itemsList;
-  //       });
-  //     } else {
-  //       ScaffoldMessenger.of(context).showSnackBar(
-  //         const SnackBar(
-  //           backgroundColor: Colors.red,
-  //           content: Text('Загрузка не удалась'),
-  //           duration: Duration(seconds: 2), // Длительность отображения Snackbar
-  //         ),
-  //       );
-  //       throw Exception('Failed to load items');
-  //     }
-  //   } catch (error) {
-  //     ScaffoldMessenger.of(context).showSnackBar(
-  //       SnackBar(
-  //         backgroundColor: Colors.red,
-  //         content: Text('Произошла ошибка: $error'),
-  //         duration: const Duration(seconds: 2),
-  //       ),
-  //     );
-  //     throw Exception('Failed to load items: $error');
-  //   }
-  // }
-
-  Future<void> fetchItems() async {
-    try {
-      final response = await http.get(Uri.parse('$API_URL/api/items'));
-
-      if (response.statusCode == 200) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            backgroundColor: Colors.green,
-            content: Text('Загружено успешно'),
-            duration: Duration(seconds: 2), // Длительность отображения Snackbar
-          ),
-        );
-        final List<dynamic> responseData = json.decode(response.body);
-        final List<Map<String, dynamic>> itemsList =
-            List<Map<String, dynamic>>.from(responseData);
-        setState(() {
-          items = itemsList;
-        });
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            backgroundColor: Colors.red,
-            content: Text('Загрузка не удалась'),
-            duration: Duration(seconds: 2), // Длительность отображения Snackbar
-          ),
-        );
-        throw Exception('Failed to load items');
-      }
-    } catch (error) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: Colors.red,
-          content: Text('Произошла ошибка: $error'),
-          duration: const Duration(seconds: 2),
-        ),
-      );
-      throw Exception('Failed to load items: $error');
-    }
   }
 
   void _sort<T>(Comparable<T> Function(Map<String, dynamic> d) getField,
@@ -835,7 +158,7 @@ class _TablePageState extends State<TablePage> {
             child: Text(
               tooltip,
               style: const TextStyle(fontSize: 14.0, color: Colors.white),
-              textAlign: TextAlign.right,
+              textAlign: TextAlign.center,
               selectionColor: Colors.white,
             ),
           )
@@ -891,7 +214,7 @@ class _TablePageState extends State<TablePage> {
         },
       ),
       DataColumn(
-        label: _buildColumnLabel('   Серийный номер', Icons.numbers),
+        label: _buildColumnLabel('   Серийный\nномер', Icons.numbers),
         tooltip: '  Серийный номер',
         onSort: (columnIndex, ascending) {
           setState(() {
@@ -914,7 +237,7 @@ class _TablePageState extends State<TablePage> {
       ),
       DataColumn(
         label: _buildColumnLabel(
-            '   Тип лицензии', Icons.format_list_numbered_rounded),
+            ' Тип\n лицензии', Icons.format_list_numbered_rounded),
         tooltip: 'Тип лицензии',
         onSort: (columnIndex, ascending) {
           setState(() {
@@ -925,7 +248,7 @@ class _TablePageState extends State<TablePage> {
         },
       ),
       DataColumn(
-        label: _buildColumnLabel('   Срок', Icons.date_range),
+        label: _buildColumnLabel(' Срок', Icons.date_range),
         tooltip: 'срок',
         onSort: (columnIndex, ascending) {
           setState(() {
@@ -971,7 +294,7 @@ class _TablePageState extends State<TablePage> {
       ),
 
       DataColumn(
-        label: _buildColumnLabel('   Код активации', Icons.password),
+        label: _buildColumnLabel('   Код\nактивации', Icons.password),
         tooltip: 'Код активации',
         onSort: (columnIndex, ascending) {
           setState(() {
@@ -1006,11 +329,24 @@ class _TablePageState extends State<TablePage> {
         ),
       );
     }
+    if (_increaseValue) {
+      columns.add(
+        const DataColumn(
+          label: Icon(
+            Icons.print,
+            color: Colors.greenAccent,
+          ),
+
+          tooltip: 'Выбрать для печати',
+        ),
+      );
+    }
     return columns;
   }
 
   @override
   Widget build(BuildContext context) {
+
     var licenseTypes = {
       1: "Сервер",
       2: "Мост",
@@ -1037,13 +373,10 @@ class _TablePageState extends State<TablePage> {
       onWillPop: () async {
         return backButton(context);
       },
-      
       child: Scaffold(
-
         appBar: CustomAppBar(userDto: widget.userDto),
         drawer: AppDrawer(userDto: widget.userDto),
         body: SingleChildScrollView(
-
           child: Column(
             children: [
               Padding(
@@ -1060,6 +393,7 @@ class _TablePageState extends State<TablePage> {
                         labelText: 'Фильтр по владельцу',
                       ),
                     ),
+
                     TextField(
                       controller: licenseTypeFilterController,
                       onChanged: (value) {
@@ -1070,6 +404,16 @@ class _TablePageState extends State<TablePage> {
                         labelText: 'Фильтр по типу лицензии',
                       ),
                     ),
+                    // TextField(
+                    //   controller: licenseTypeFilterController,
+                    //   onChanged: (value) {
+                    //     _filterItems(pageSize, currentPage);
+                    //     setState(() {});
+                    //   },
+                    //   decoration: const InputDecoration(
+                    //     labelText: 'Фильтр по типу лицензии',
+                    //   ),
+                    // ),
                     TextField(
                       controller: licenseKeyFilterController,
                       onChanged: (value) {
@@ -1080,6 +424,26 @@ class _TablePageState extends State<TablePage> {
                         labelText: 'Фильтр по лицензии',
                       ),
                     ),
+                    CheckboxListTile(
+                      title: const Text('печать нескольких'),
+                      controlAffinity: ListTileControlAffinity.leading,
+                      value: _increaseValue,
+                      onChanged: (newValue) {
+                        setState(() {
+                          _increaseValue = newValue!;
+                        });
+                      },
+                    ),
+                    if (_increaseValue)
+                      Container(
+                        alignment: Alignment.bottomLeft,
+                        child: ElevatedButton(
+                          onPressed: () {
+                            sendSelectedItemsToServer(context, selectedIds);
+                          },
+                          child: Text('Отправить'),
+                        ),
+                      )
                   ],
                 ),
               ),
@@ -1154,15 +518,16 @@ class _TablePageState extends State<TablePage> {
                                       DataCell(
                                         Center(
                                           child: Text(
-                                            item['license_key'].toString(),
+                                            item['license_key'].toString().substring(0, 10), // Ограничение до 5 символов
+                                            overflow: TextOverflow.ellipsis, // Обрезание текста, если он не помещается
                                           ),
                                         ),
                                       ),
+
                                       DataCell(
                                         Center(
                                           child: Text(
-                                            licenseTypes[
-                                                item['license_type']]!,
+                                            licenseTypes[item['license_type']]!,
                                           ),
                                         ),
                                       ),
@@ -1225,8 +590,11 @@ class _TablePageState extends State<TablePage> {
                                           Center(
                                             child: ElevatedButton(
                                               onPressed: () {
-                                                deleteItem(context, item['id'], () {
-                                                  fetchItemsPage(context, (List<Map<String, dynamic>> itemsList) {
+                                                deleteItem(context, item['id'],
+                                                    () {
+                                                  fetchItemsPage(context, (List<
+                                                          Map<String, dynamic>>
+                                                      itemsList) {
                                                     setState(() {
                                                       items = itemsList;
                                                     });
@@ -1248,12 +616,39 @@ class _TablePageState extends State<TablePage> {
                                           Center(
                                             child: ElevatedButton(
                                               onPressed: () {
-                                                _changeItem(item['id'], item);
+                                                changeItem(context, item['id'],
+                                                    item, setState);
                                               },
                                               child: const Icon(
                                                 Icons.edit,
                                                 color: Colors.white,
                                               ),
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                    if (_increaseValue) {
+                                      cells.add(
+                                        DataCell(
+                                          Center(
+                                            child: Checkbox(
+                                              value:
+                                                  checkBoxStates[item['id']] ??
+                                                      false,
+                                              onChanged: (value) {
+                                                setState(() {
+                                                  checkBoxStates[item['id']] =
+                                                      value ?? false;
+                                                  if (value ?? false) {
+                                                    selectedIds.add(item[
+                                                        'id']); // Add id to selectedIds when checkbox is checked
+                                                  } else {
+                                                    selectedIds.remove(item[
+                                                        'id']); // Remove id from selectedIds when checkbox is unchecked
+                                                  }
+                                                });
+                                              },
                                             ),
                                           ),
                                         ),
@@ -1273,7 +668,6 @@ class _TablePageState extends State<TablePage> {
                               : filteredItems.map(
                                   (item) {
                                     List<DataCell> cells = [
-
                                       DataCell(
                                         Center(
                                           child: Text(item['name']),
@@ -1294,7 +688,7 @@ class _TablePageState extends State<TablePage> {
                                             item['date_shipping'] == null
                                                 ? '-' // or any other symbol or text
                                                 : item['date_shipping']
-                                                .toString(),
+                                                    .toString(),
                                           ),
                                         ),
                                       ),
@@ -1322,8 +716,7 @@ class _TablePageState extends State<TablePage> {
                                       DataCell(
                                         Center(
                                           child: Text(
-                                            licenseTypes[
-                                            item['license_type']]!,
+                                            licenseTypes[item['license_type']]!,
                                           ),
                                         ),
                                       ),
@@ -1331,11 +724,11 @@ class _TablePageState extends State<TablePage> {
                                         Center(
                                           child: Text(
                                             item['expiry_date']
-                                                .toString()
-                                                .isEmpty
+                                                    .toString()
+                                                    .isEmpty
                                                 ? 'бессрочно'
                                                 : item['expiry_date']
-                                                .toString(),
+                                                    .toString(),
                                           ),
                                         ),
                                       ),
@@ -1345,7 +738,7 @@ class _TablePageState extends State<TablePage> {
                                             item['max_bandwidth'] == '0'
                                                 ? '∞' // or any other symbol or text
                                                 : item['max_bandwidth']
-                                                .toString(),
+                                                    .toString(),
                                           ),
                                         ),
                                       ),
@@ -1364,7 +757,7 @@ class _TablePageState extends State<TablePage> {
                                             item['max_vpn_sessions'] == 0
                                                 ? '∞' // or any other symbol or text
                                                 : item['max_vpn_sessions']
-                                                .toString(),
+                                                    .toString(),
                                           ),
                                         ),
                                       ),
@@ -1374,7 +767,7 @@ class _TablePageState extends State<TablePage> {
                                             item['generate_key'] == null
                                                 ? '-' // or any other symbol or text
                                                 : item['generate_key']
-                                                .toString(),
+                                                    .toString(),
                                           ),
                                         ),
                                       ),
@@ -1387,8 +780,11 @@ class _TablePageState extends State<TablePage> {
                                           Center(
                                             child: ElevatedButton(
                                               onPressed: () {
-                                                deleteItem(context, item['id'], () {
-                                                  fetchItemsPage(context, (List<Map<String, dynamic>> itemsList) {
+                                                deleteItem(context, item['id'],
+                                                    () {
+                                                  fetchItemsPage(context, (List<
+                                                          Map<String, dynamic>>
+                                                      itemsList) {
                                                     setState(() {
                                                       items = itemsList;
                                                     });
@@ -1410,12 +806,30 @@ class _TablePageState extends State<TablePage> {
                                           Center(
                                             child: ElevatedButton(
                                               onPressed: () {
-                                                _changeItem(item['id'], item);
+                                                changeItem(context, item['id'],
+                                                    item, setState);
                                               },
                                               child: const Icon(
                                                 Icons.edit,
                                                 color: Colors.white,
                                               ),
+                                            ),
+                                          ),
+                                        ),
+                                      );
+                                    }
+                                    if (_increaseValue) {
+                                      selectedIds.add(item['id']);
+
+                                      cells.add(
+                                        DataCell(
+                                          Center(
+                                            child: Checkbox(
+                                              value: false,
+                                              // Provide the value for the checkbox
+                                              onChanged: (value) {
+                                                // Handle checkbox state changes here
+                                              },
                                             ),
                                           ),
                                         ),
@@ -1525,7 +939,8 @@ class _TablePageState extends State<TablePage> {
                             setState(() {
                               currentPage--;
                               pageController.text = currentPage.toString();
-                              fetchItemsPage(context, (List<Map<String, dynamic>> itemsList) {
+                              fetchItemsPage(context,
+                                  (List<Map<String, dynamic>> itemsList) {
                                 setState(() {
                                   items = itemsList;
                                 });
@@ -1547,7 +962,8 @@ class _TablePageState extends State<TablePage> {
                         currentPage = value.isNotEmpty
                             ? int.tryParse(value) ?? currentPage
                             : 1;
-                        fetchItemsPage(context, (List<Map<String, dynamic>> itemsList) {
+                        fetchItemsPage(context,
+                            (List<Map<String, dynamic>> itemsList) {
                           setState(() {
                             items = itemsList;
                           });
@@ -1565,7 +981,8 @@ class _TablePageState extends State<TablePage> {
                         currentPage++;
                         pageController.text = currentPage
                             .toString(); // Обновляем значение в TextField
-                        fetchItemsPage(context, (List<Map<String, dynamic>> itemsList) {
+                        fetchItemsPage(context,
+                            (List<Map<String, dynamic>> itemsList) {
                           setState(() {
                             items = itemsList;
                           });
@@ -1586,7 +1003,8 @@ class _TablePageState extends State<TablePage> {
                         setState(() {
                           pageSize = int.tryParse(value) ?? 10;
                           // Обновляем значение pageSize
-                          fetchItemsPage(context, (List<Map<String, dynamic>> itemsList) {
+                          fetchItemsPage(context,
+                              (List<Map<String, dynamic>> itemsList) {
                             setState(() {
                               items = itemsList;
                             });
