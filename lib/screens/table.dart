@@ -65,8 +65,8 @@ class _TablePageState extends State<TablePage> {
   TextEditingController licenseTypeFilterController = TextEditingController();
   TextEditingController licenseNumberFilterController = TextEditingController();
   TextEditingController licenseKeyFilterController = TextEditingController();
-  TextEditingController pageController = TextEditingController();
-  TextEditingController pageSizeController = TextEditingController();
+  TextEditingController pageController = TextEditingController(text: '1');
+  TextEditingController pageSizeController = TextEditingController(text: '10');
 
   @override
   void initState() {
@@ -154,18 +154,18 @@ class _TablePageState extends State<TablePage> {
 
   Widget _buildColumnLabel(String tooltip, IconData icon) {
     return (kIsWeb || defaultTargetPlatform == TargetPlatform.windows)
-        ? Center(
+        ? Flexible(
             child: Text(
-              tooltip,
-              style: const TextStyle(fontSize: 14.0, color: Colors.white),
-              textAlign: TextAlign.center,
-              selectionColor: Colors.white,
-            ),
-          )
+            tooltip,
+            style: const TextStyle(fontSize: 14.0, color: Colors.white),
+            textAlign: TextAlign.center,
+            selectionColor: Colors.white,
+          ))
         : Icon(icon);
   }
 
   List<DataColumn> buildDataColumns() {
+
     List<DataColumn> columns = [
       DataColumn(
         label: _buildColumnLabel('Владелец', Icons.account_box),
@@ -179,7 +179,7 @@ class _TablePageState extends State<TablePage> {
         },
       ),
       DataColumn(
-        label: _buildColumnLabel('   УНН/УНП', Icons.password),
+        label: _buildColumnLabel('УНН/УНП', Icons.password),
         tooltip: 'УНН/УНП',
         onSort: (columnIndex, ascending) {
           setState(() {
@@ -191,7 +191,7 @@ class _TablePageState extends State<TablePage> {
       ),
 
       DataColumn(
-        label: _buildColumnLabel('   Дата отгрузки', Icons.password),
+        label: _buildColumnLabel('Дата отгрузки', Icons.password),
         tooltip: 'Дата отгрузки',
         onSort: (columnIndex, ascending) {
           setState(() {
@@ -203,7 +203,7 @@ class _TablePageState extends State<TablePage> {
       ),
 
       DataColumn(
-        label: _buildColumnLabel('   Договор', Icons.password),
+        label: _buildColumnLabel('Договор', Icons.password),
         tooltip: 'Договор',
         onSort: (columnIndex, ascending) {
           setState(() {
@@ -214,8 +214,8 @@ class _TablePageState extends State<TablePage> {
         },
       ),
       DataColumn(
-        label: _buildColumnLabel('   Серийный\nномер', Icons.numbers),
-        tooltip: '  Серийный номер',
+        label: _buildColumnLabel('Серийный\nномер', Icons.numbers),
+        tooltip: 'Серийный номер',
         onSort: (columnIndex, ascending) {
           setState(() {
             _sortAscending = ascending;
@@ -225,7 +225,7 @@ class _TablePageState extends State<TablePage> {
         },
       ),
       DataColumn(
-        label: _buildColumnLabel('  Лицензия', Icons.text_fields),
+        label: _buildColumnLabel('Лицензия', Icons.text_fields),
         tooltip: 'Лицензия',
         onSort: (columnIndex, ascending) {
           setState(() {
@@ -237,7 +237,7 @@ class _TablePageState extends State<TablePage> {
       ),
       DataColumn(
         label: _buildColumnLabel(
-            ' Тип\n лицензии', Icons.format_list_numbered_rounded),
+            'Тип лицензии', Icons.format_list_numbered_rounded),
         tooltip: 'Тип лицензии',
         onSort: (columnIndex, ascending) {
           setState(() {
@@ -248,7 +248,7 @@ class _TablePageState extends State<TablePage> {
         },
       ),
       DataColumn(
-        label: _buildColumnLabel(' Срок', Icons.date_range),
+        label: _buildColumnLabel('Срок', Icons.date_range),
         tooltip: 'срок',
         onSort: (columnIndex, ascending) {
           setState(() {
@@ -260,7 +260,7 @@ class _TablePageState extends State<TablePage> {
       ),
       DataColumn(
         label:
-            _buildColumnLabel('  Пропускная\nспособность', Icons.network_check),
+            _buildColumnLabel('Пропускная\nспособность', Icons.network_check),
         tooltip: 'Пропускная\nспособность',
         onSort: (columnIndex, ascending) {
           setState(() {
@@ -271,7 +271,7 @@ class _TablePageState extends State<TablePage> {
         },
       ),
       DataColumn(
-        label: _buildColumnLabel('  Макс кол-во\nпользователей', Icons.people),
+        label: _buildColumnLabel('Макс кол-во\nпользователей', Icons.people),
         tooltip: 'Макс кол-во\nпользователей',
         onSort: (columnIndex, ascending) {
           setState(() {
@@ -280,9 +280,10 @@ class _TablePageState extends State<TablePage> {
             _sort((item) => item['max_users'], columnIndex, ascending);
           });
         },
+
       ),
       DataColumn(
-        label: _buildColumnLabel('  Макс кол-во\nсессий', Icons.account_tree),
+        label: _buildColumnLabel('Макс кол-во\nсессий', Icons.account_tree),
         tooltip: 'Макс кол-во\nсессий',
         onSort: (columnIndex, ascending) {
           setState(() {
@@ -294,7 +295,7 @@ class _TablePageState extends State<TablePage> {
       ),
 
       DataColumn(
-        label: _buildColumnLabel('   Код\nактивации', Icons.password),
+        label: _buildColumnLabel('Код\nактивации', Icons.password),
         tooltip: 'Код активации',
         onSort: (columnIndex, ascending) {
           setState(() {
@@ -336,7 +337,6 @@ class _TablePageState extends State<TablePage> {
             Icons.print,
             color: Colors.greenAccent,
           ),
-
           tooltip: 'Выбрать для печати',
         ),
       );
@@ -344,9 +344,58 @@ class _TablePageState extends State<TablePage> {
     return columns;
   }
 
+  String dropdownValue =
+      'Сервер'; // добавляем переменную и устанавливаем значение по умолчанию
+  bool isCheckedServer = false;
+  bool isCheckedConfirmationCode = false;
+
+  void updateLicenseType() {
+    switch (dropdownValue) {
+      case 'Любой':
+        licenseTypeFilterController.text = '';
+        break;
+      case 'Сервер':
+        if (isCheckedServer && isCheckedConfirmationCode) {
+          licenseTypeFilterController.text =
+              '104'; // сервер без случайности с КП
+        } else if (isCheckedServer) {
+          licenseTypeFilterController.text = '101'; // сервер без случайности
+        } else if (isCheckedConfirmationCode) {
+          licenseTypeFilterController.text = '4'; // сервер с КП
+        } else {
+          licenseTypeFilterController.text = '1'; // сервер
+        }
+        break;
+      case 'Мост':
+        if (isCheckedServer && isCheckedConfirmationCode) {
+          licenseTypeFilterController.text = '105'; // мост без случайности с КП
+        } else if (isCheckedServer) {
+          licenseTypeFilterController.text = '102'; // мост без случайности
+        } else if (isCheckedConfirmationCode) {
+          licenseTypeFilterController.text = '5'; // мост с КП
+        } else {
+          licenseTypeFilterController.text = '2'; // мост
+        }
+        break;
+      case 'Клиент':
+        if (isCheckedServer && isCheckedConfirmationCode) {
+          licenseTypeFilterController.text =
+              '106'; // клиент без случайности с КП
+        } else if (isCheckedServer) {
+          licenseTypeFilterController.text = '103'; // клиент без случайности
+        } else if (isCheckedConfirmationCode) {
+          licenseTypeFilterController.text = '6'; // клиент с КП
+        } else {
+          licenseTypeFilterController.text = '3'; // клиент
+        }
+        break;
+      default:
+        licenseTypeFilterController.text = '';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-
     var licenseTypes = {
       1: "Сервер",
       2: "Мост",
@@ -394,16 +443,70 @@ class _TablePageState extends State<TablePage> {
                       ),
                     ),
 
-                    TextField(
-                      controller: licenseTypeFilterController,
-                      onChanged: (value) {
-                        _filterItems(pageSize, currentPage);
-                        setState(() {});
-                      },
-                      decoration: const InputDecoration(
-                        labelText: 'Фильтр по типу лицензии',
-                      ),
+                    Row(
+                      children: [
+                        DropdownButton<String>(
+                          value: dropdownValue,
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              dropdownValue = newValue!;
+                              updateLicenseType();
+                              _filterItems(pageSize, currentPage);
+                            });
+                          },
+                          items: <String>[
+                            'Любой',
+                            'Сервер',
+                            'Мост',
+                            'Клиент'
+                          ] // добавляем элемент "любое"
+                              .map<DropdownMenuItem<String>>((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(value),
+                            );
+                          }).toList(),
+                        ),
+                        SizedBox(width: 20),
+                        // пространство между выпадающим списком и чекбоксами
+
+                        Row(
+                          children: [
+                            const Text('Без физического источника',
+                              style: const TextStyle(fontSize: 16.0),),
+                            // добавляем текстовую метку для чекбокса
+                            Checkbox(
+                              value: isCheckedServer,
+                              onChanged: (bool? newValue) {
+                                setState(() {
+                                  isCheckedServer = newValue!;
+                                  updateLicenseType();
+                                  _filterItems(pageSize, currentPage);
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                        Row(
+                          children: [
+                            Text('С кодом подтверждения',
+                              style: const TextStyle(fontSize: 16.0),),
+                            // добавляем текстовую метку для чекбокса
+                            Checkbox(
+                              value: isCheckedConfirmationCode,
+                              onChanged: (bool? newValue) {
+                                setState(() {
+                                  isCheckedConfirmationCode = newValue!;
+                                  updateLicenseType();
+                                  _filterItems(pageSize, currentPage);
+                                });
+                              },
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
+
                     // TextField(
                     //   controller: licenseTypeFilterController,
                     //   onChanged: (value) {
@@ -425,7 +528,7 @@ class _TablePageState extends State<TablePage> {
                       ),
                     ),
                     CheckboxListTile(
-                      title: const Text('печать нескольких'),
+                      title: const Text('Печать нескольких'),
                       controlAffinity: ListTileControlAffinity.leading,
                       value: _increaseValue,
                       onChanged: (newValue) {
@@ -441,7 +544,7 @@ class _TablePageState extends State<TablePage> {
                           onPressed: () {
                             sendSelectedItemsToServer(context, selectedIds);
                           },
-                          child: Text('Отправить'),
+                          child: Text('Сформировать документы'),
                         ),
                       )
                   ],
@@ -457,6 +560,8 @@ class _TablePageState extends State<TablePage> {
                       child: SizedBox(
                         width: MediaQuery.of(context).size.width,
                         child: DataTable(
+
+
                           showCheckboxColumn: false,
                           headingRowColor: MaterialStateColor.resolveWith(
                               (Set<MaterialState> states) {
@@ -466,7 +571,7 @@ class _TablePageState extends State<TablePage> {
                             width: 2.0,
                             color: Colors.black45,
                           ),
-                          columnSpacing: 1,
+                          columnSpacing: 10,
                           sortAscending: _sortAscending,
                           sortColumnIndex: _sortColumnIndex,
                           columns: buildDataColumns(),
@@ -518,12 +623,14 @@ class _TablePageState extends State<TablePage> {
                                       DataCell(
                                         Center(
                                           child: Text(
-                                            item['license_key'].toString().substring(0, 10), // Ограничение до 5 символов
-                                            overflow: TextOverflow.ellipsis, // Обрезание текста, если он не помещается
+                                            item['license_key']
+                                                .toString(),
+                                                // Ограничение до 5 символов
+                                            overflow: TextOverflow
+                                                .ellipsis, // Обрезание текста, если он не помещается
                                           ),
                                         ),
                                       ),
-
                                       DataCell(
                                         Center(
                                           child: Text(
@@ -992,7 +1099,7 @@ class _TablePageState extends State<TablePage> {
                       });
                     },
                   ),
-                  const Text('Количество строк'),
+                  const Text('Количество строк:'),
                   // Бокс для ввода размера страницы
                   SizedBox(
                     width: 50, // Ширина поля TextField

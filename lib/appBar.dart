@@ -55,7 +55,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
             // Переход на страницу входа
             Navigator.of(context).pushReplacement(PageTransition(
               type: PageTransitionType.leftToRight,
-              child: LoginPage(),
+              child: const LoginPage(),
             ));
           },
         ),
@@ -77,7 +77,7 @@ class AppDrawer extends StatelessWidget {
         return AlertDialog(
           scrollable: true,
           // insetPadding: EdgeInsets.all(400),
-          title: Text('Данные о пользователе'),
+          title: const Text('Данные о пользователе'),
           content: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -91,7 +91,7 @@ class AppDrawer extends StatelessWidget {
                 Navigator.pop(context);
                 _showEditDialog(context);
               },
-              child: Text('Изменить'),
+              child: const Text('Изменить'),
             ),
           ],
         );
@@ -108,22 +108,22 @@ class AppDrawer extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          insetPadding: EdgeInsets.all(350),
-          title: Text('Изменить данные'),
+          insetPadding: const EdgeInsets.all(350),
+          title: const Text('Изменить данные'),
           content: Column(
             children: [
               TextField(
                 onChanged: (value) {
                   newLogin = value;
                 },
-                decoration: InputDecoration(labelText: 'Новый логин'),
+                decoration: const InputDecoration(labelText: 'Новый логин'),
               ),
               TextField(
                 onChanged: (value) {
                   newPassword = value;
                 },
                 obscureText: true,
-                decoration: InputDecoration(labelText: 'Новый пароль'),
+                decoration: const InputDecoration(labelText: 'Новый пароль'),
               ),
               //TODO: проверка правильного ввода нового пароля
               // TextField(
@@ -145,11 +145,11 @@ class AppDrawer extends StatelessWidget {
                   context,
                   PageTransition(
                     type: PageTransitionType.leftToRight,
-                    child: LoginPage(),
+                    child: const LoginPage(),
                   ),
                 );
               },
-              child: Text('Сохранить'),
+              child: const Text('Сохранить'),
             ),
           ],
         );

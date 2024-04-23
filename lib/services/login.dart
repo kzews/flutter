@@ -9,7 +9,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart' as Storage;
 import '../environment.dart';
 import '../objects/userDto.dart';
 
-final storage = Storage.FlutterSecureStorage();
+final storage = const Storage.FlutterSecureStorage();
 
 // Сохранение токена в localStorage
 // void saveTokenWeb(String token) {
@@ -45,7 +45,7 @@ Future<UserDto> login(BuildContext context, UserDto userDto) async {
     // Обработка ошибки - сервер не доступен
     print('Сервер не доступен: $e');
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
+      const SnackBar(
         backgroundColor: Colors.red,
         content: Text('Сервер недоступен'),
         duration: Duration(seconds: 2),

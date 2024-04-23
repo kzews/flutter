@@ -73,7 +73,7 @@ Future<void> showLicenseDetailsDialog(
                 'Пароль Root: ${item['passwordRoot'] ?? 'не задано'}',
               ),
               Text(
-                'Примечание: ${item['remark'] ?? ''}',
+                'Примечание: ${item['remark'] =='null' ? '' : item['remark']}',
               ),
             ],
           ],

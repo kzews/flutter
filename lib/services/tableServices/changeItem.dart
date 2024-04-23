@@ -52,8 +52,8 @@ Future<void> changeItem(BuildContext context, int itemId, Map<String, dynamic> i
       TextEditingController dogovorController = TextEditingController(text: '${item['dogovor']}');
       TextEditingController unnOrUnpController = TextEditingController(text: '${item['UNNorUNP']}');
       TextEditingController remarkController = TextEditingController(text: '${item['remark']}');
-      final TextEditingController _passwordBiosController = TextEditingController();
-      final TextEditingController _passwordRootController = TextEditingController();
+      final TextEditingController _passwordBiosController = TextEditingController(text: '${item['passwordBIOS']}');
+      final TextEditingController _passwordRootController = TextEditingController(text: '${item['passwordRoot']}');
       final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>();
 
 
@@ -90,7 +90,7 @@ Future<void> changeItem(BuildContext context, int itemId, Map<String, dynamic> i
                   decoration: InputDecoration(
                     labelText: 'Пароль BIOS',
                     suffixIcon: IconButton(
-                      icon: const Icon(Icons.lock),
+                      icon: const Icon(Icons.cached_rounded),
                       onPressed: () {
                         setState(() {
                           _passwordBiosController.text = generatePassword();
@@ -115,7 +115,7 @@ Future<void> changeItem(BuildContext context, int itemId, Map<String, dynamic> i
                   decoration: InputDecoration(
                     labelText: 'Пароль ROOT',
                     suffixIcon: IconButton(
-                      icon: const Icon(Icons.lock),
+                      icon: const Icon(Icons.cached_rounded),
                       onPressed: () {
                         setState(() {
                           _passwordRootController.text = generatePassword();
