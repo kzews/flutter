@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttersrc/screens/table.dart';
 import 'package:fluttersrc/screens/routes_page.dart';
+import 'package:fluttersrc/screens/table_resize.dart';
 import 'package:page_transition/page_transition.dart';
 
 import '../environment.dart';
@@ -157,6 +158,13 @@ class _LoginPageState extends State<LoginPage> {
                 Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
+                    // ElevatedButton(onPressed: () {
+                    //   Navigator.of(context).pushReplacement(PageTransition(
+                    //     type: PageTransitionType.leftToRight,
+                    //     child: TableColumnResize(),
+                    //   ));
+                    // },
+                    //    Text(' таблице с растягивающимися колонками'),),
                     TextField(
                       controller: _loginController,
                       decoration: const InputDecoration(
@@ -224,6 +232,7 @@ class _LoginPageState extends State<LoginPage> {
                         ),
                       ),
                     ),
+
                   ],
                 ),
                 Positioned(

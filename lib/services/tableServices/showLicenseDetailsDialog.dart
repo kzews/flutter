@@ -73,23 +73,24 @@ Future<void> showLicenseDetailsDialog(
                 'Пароль Root: ${item['passwordRoot'] ?? 'не задано'}',
               ),
               Text(
-                'Примечание: ${item['remark'] =='null' ? '' : item['remark']}',
+                'Примечание: ${item['remark'] ?? ''}',
               ),
             ],
+
           ],
         ),
         actions: [
-          TextButton(
-            onPressed: () {
-              if (kIsWeb) {
-                savePDFWeb(item); //your web page with web package import in it
-              } else if (!kIsWeb && io.Platform.isWindows) {
-                savePDF(
-                    item); //your window page with window package import in it
-              }
-            },
-            child: const Text('В PDF-формате'),
-          ),
+          // TextButton(
+          //   onPressed: () {
+          //     if (kIsWeb) {
+          //       savePDFWeb(item); //your web page with web package import in it
+          //     } else if (!kIsWeb && io.Platform.isWindows) {
+          //       savePDF(
+          //           item); //your window page with window package import in it
+          //     }
+          //   },
+          //   child: const Text('В PDF-формате'),
+          // ),
           Visibility(
             visible: isActivationButtonVisible,
             child: TextButton(
@@ -99,12 +100,12 @@ Future<void> showLicenseDetailsDialog(
               child: const Text('Активировать лицензию'),
             ),
           ),
-          TextButton(
-            onPressed: () {
-              sendItemIdToServer(context, item['id']); // Send item ID to server
-            },
-            child: const Text('Получить файл с сервера'), // New button
-          ),
+          // TextButton(
+          //   onPressed: () {
+          //     sendItemIdToServer(context, item['id']); // Send item ID to server
+          //   },
+          //   child: const Text('Получить файл с сервера'), // New button
+          // ),
           TextButton(
             onPressed: () {
               showHistoryDialog(context, item['id']);

@@ -42,7 +42,9 @@ class _HomePageState extends State<HomePage> {
   final TextEditingController remarkController = TextEditingController();
 
 
+
   List<Map<String, dynamic>> items = [];
+  String? dateSend;
   DateTime? currentBackPressTime;
   bool _increaseValue = false;
   int _selectedValue = 0;
@@ -110,7 +112,7 @@ class _HomePageState extends State<HomePage> {
           'DateCreate': DateTime.now().toString(),
           'name': _nameController.text,
           'license_type': int.parse(_licenseTypeController.text),
-          'expiry_date': _expiryDateController.text,
+          'expiry_date': dateSend.toString(),
           'date_shipping': _dateShippingController.text,
           'dogovor': _dogovorController.text,
           'UNNorUNP': _UNNorUNPController.text,
@@ -183,8 +185,8 @@ class _HomePageState extends State<HomePage> {
       lastDate: DateTime(2101),
     );
     if (picked != null && picked != DateTime.now()) {
-      _expiryDateController.text =
-          "${picked.year}/${picked.month}/${picked.day}";
+      _expiryDateController.text = "${picked.day}-${picked.month}-${picked.year}";
+      dateSend ="${picked.year}/${picked.month}/${picked.day}";
     }
   }
 
