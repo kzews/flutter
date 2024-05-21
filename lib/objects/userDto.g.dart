@@ -10,7 +10,7 @@ UserDto _$UserDtoFromJson(Map<String, dynamic> json) => UserDto(
       login: json['login'] as String?,
       role: json['role'] as String?,
       password: json['password'] as String?,
-      id: json['id'] as int?,
+      id: (json['id'] as num?)?.toInt(),
       token: json['token'] as String?,
     );
 

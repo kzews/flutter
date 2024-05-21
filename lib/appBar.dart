@@ -1,4 +1,3 @@
-// import 'dart:html';
 
 import 'package:flutter/material.dart';
 import 'package:fluttersrc/screens/add_license.dart';
@@ -6,6 +5,7 @@ import 'package:fluttersrc/screens/login_page.dart';
 import 'package:fluttersrc/screens/registration.dart';
 import 'package:fluttersrc/screens/table.dart';
 import 'package:fluttersrc/screens/routes_page.dart';
+import 'package:fluttersrc/screens/table2.dart';
 import 'package:fluttersrc/screens/users_table.dart';
 import 'package:fluttersrc/services/changeUser.dart';
 import 'package:fluttersrc/services/login.dart';
@@ -25,10 +25,12 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
 
     return AppBar(
+
       title: const Text('Flutter Database App'),
       leading: Builder(
         builder: (BuildContext context) {
           return IconButton(
+            color: Colors.white,
             icon: const Icon(Icons.menu),
             onPressed: () {
               Scaffold.of(context).openDrawer();
@@ -38,6 +40,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       ),
       actions: <Widget>[
         IconButton(
+          color: Colors.white,
           icon: const Icon(Icons.home),
           onPressed: () {
             Navigator.of(context).pushReplacement(PageTransition(
@@ -47,6 +50,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
           },
         ),
         IconButton(
+          color: Colors.white,
           icon: const Icon(Icons.exit_to_app),
           onPressed: () async {
             // Удаление токена из хранилища

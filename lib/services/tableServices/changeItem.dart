@@ -51,9 +51,10 @@ Future<void> changeItem(BuildContext context, int itemId, Map<String, dynamic> i
       TextEditingController dateShippingController = TextEditingController(text: '${item['date_shipping']}');
       TextEditingController dogovorController = TextEditingController(text: '${item['dogovor']}');
       TextEditingController unnOrUnpController = TextEditingController(text: '${item['UNNorUNP']}');
-      TextEditingController remarkController = TextEditingController(text: '${item['remark']}');
-      final TextEditingController _passwordBiosController = TextEditingController(text: '${item['passwordBIOS']}');
-      final TextEditingController _passwordRootController = TextEditingController(text: '${item['passwordRoot']}');
+      String remarkText = item['remark'] != null ? item['remark'] : '-';
+      TextEditingController remarkController = TextEditingController(text: remarkText);
+      final TextEditingController _passwordBiosController = TextEditingController(text: item['passwordBIOS'] != null ? item['passwordBIOS'] : '');
+      final TextEditingController _passwordRootController = TextEditingController(text: item['passwordRoot'] != null ? item['passwordRoot'] : '');
       final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>();
 
 

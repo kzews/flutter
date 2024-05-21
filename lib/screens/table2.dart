@@ -30,8 +30,8 @@ class VerticalTextCell extends StatelessWidget {
   }
 }
 
-class TablePage2 extends StatefulWidget {
-  const TablePage2({Key? key, required this.userDto}) : super(key: key);
+class TablePage extends StatefulWidget {
+  const TablePage({Key? key, required this.userDto}) : super(key: key);
   final UserDto userDto;
 
   @override
@@ -50,7 +50,7 @@ final List<IconData> columnIcons = [
   Icons.settings,
 ];
 
-class _TablePageState extends State<TablePage2> {
+class _TablePageState extends State<TablePage> {
   List<Map<String, dynamic>> filteredItems = [];
   bool _sortAscending = true;
   int _sortColumnIndex = 0;
@@ -58,7 +58,7 @@ class _TablePageState extends State<TablePage2> {
   bool _increaseValue = false;
   bool isChecked = false;
   Map<int, bool> checkBoxStates =
-  {}; // int - индекс строки, bool - состояние флажка
+      {}; // int - индекс строки, bool - состояние флажка
   List<int> selectedIds = [];
 
   TextEditingController nameFilterController = TextEditingController();
@@ -78,23 +78,6 @@ class _TablePageState extends State<TablePage2> {
           checkBoxStates[i] = false;
         }
       });
-    });
-
-  }
-
-  bool _selectAll = false;
-
-  void _toggleSelectAll(bool? value) {
-    setState(() {
-      _selectAll = value ?? false;
-      for (var item in items) {
-        checkBoxStates[item['id']] = _selectAll;
-        if (_selectAll) {
-          selectedIds.add(item['id']);
-        } else {
-          selectedIds.remove(item['id']);
-        }
-      }
     });
   }
 
@@ -120,7 +103,7 @@ class _TablePageState extends State<TablePage2> {
     final nameFilter = nameFilterController.text.toLowerCase();
     final licenseTypeFilter = licenseTypeFilterController.text.toLowerCase();
     final licenseNumberFilter =
-    licenseNumberFilterController.text.toLowerCase();
+        licenseNumberFilterController.text.toLowerCase();
     final licenseKeyFilter = licenseKeyFilterController.text.toLowerCase();
 
     final url = Uri.parse('$API_URL/api/filterItems');
@@ -139,7 +122,7 @@ class _TablePageState extends State<TablePage2> {
     if (response.statusCode == 200) {
       final List<dynamic> responseData = json.decode(response.body);
       final List<Map<String, dynamic>> itemsList =
-      List<Map<String, dynamic>>.from(responseData);
+          List<Map<String, dynamic>>.from(responseData);
 
       setState(() {
         items = itemsList;
@@ -151,8 +134,6 @@ class _TablePageState extends State<TablePage2> {
     }
 
     setState(() {
-
-
       fetchItemsPage(context, (List<Map<String, dynamic>> itemsList) {
         setState(() {
           items = itemsList;
@@ -169,66 +150,40 @@ class _TablePageState extends State<TablePage2> {
             licenseKey.contains(licenseKeyFilter);
       }).toList();
     });
-
   }
 
-  late List<double> columnWidths = WidthColumns;
-  Widget _buildColumnLabel(String tooltip, IconData icon,int columnIndex) {
+  bool _selectAll = false;
+
+  void _toggleSelectAll(bool? value) {
+    setState(() {
+      _selectAll = value ?? false;
+      for (var item in items) {
+        checkBoxStates[item['id']] = _selectAll;
+        if (_selectAll) {
+          selectedIds.add(item['id']);
+        } else {
+          selectedIds.remove(item['id']);
+        }
+      }
+    });
+  }
+
+  Widget _buildColumnLabel(String tooltip, IconData icon) {
     return (kIsWeb || defaultTargetPlatform == TargetPlatform.windows)
-        ? Stack(
-      children:[ Container(
-
-
-        child:   Text(
-          tooltip,
-          style: const TextStyle(fontSize: 14.0, color: Colors.white),
-          textAlign: TextAlign.center,
-          selectionColor: Colors.white,
-        ),
-        width: columnWidths[columnIndex],
-        constraints: BoxConstraints(minWidth: 10),),
-        Positioned(
-          right: 0,
-          child: GestureDetector(
-            onPanStart: (details) {
-              // debugPrint(details.globalPosition.dx.toString());
-              setState(() {
-                initX = details.globalPosition.dx;
-              });
-            },
-            onPanUpdate: (details) {
-              final increment = details.globalPosition.dx - initX;
-              final newWidth = columnWidths[columnIndex] + increment;
-              setState(() {
-                initX = details.globalPosition.dx;
-                columnWidths[columnIndex] = newWidth > minimumColumnWidth
-                    ? newWidth
-                    : minimumColumnWidth;
-              });
-            },
-            child: Container(
-              width: 15,
-              height: 15,
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(1),
-                shape: BoxShape.circle,
-              ),
-            ),
-          ),
-        )],)
+        ? Expanded(
+            child: Text(
+            tooltip,
+            style: const TextStyle(fontSize: 14.0, color: Colors.white),
+            textAlign: TextAlign.center,
+            selectionColor: Colors.white,
+          ))
         : Icon(icon);
   }
 
-  double initX = 0;
-  final minimumColumnWidth = 50.0;
-  final verticalScrollController = ScrollController();
-  final horizontalScrollController = ScrollController();
-
   List<DataColumn> buildDataColumns() {
     List<DataColumn> columns = [
-
       DataColumn(
-        label: _buildColumnLabel('Владелец', Icons.password, 1),
+        label: _buildColumnLabel('Владелец', Icons.account_box),
         tooltip: 'Владелец',
         onSort: (columnIndex, ascending) {
           setState(() {
@@ -239,12 +194,19 @@ class _TablePageState extends State<TablePage2> {
         },
       ),
       DataColumn(
-        label: _buildColumnLabel('УНН/УНП', Icons.password, 2),
+        label: _buildColumnLabel('УНН/УНП', Icons.password),
         tooltip: 'УНН/УНП',
+        onSort: (columnIndex, ascending) {
+          setState(() {
+            _sortAscending = ascending;
+            _sortColumnIndex = columnIndex;
+            _sort((item) => item['UNNorUNP'], columnIndex, ascending);
+          });
+        },
       ),
 
       DataColumn(
-        label: _buildColumnLabel('Дата отгрузки', Icons.password,3),
+        label: _buildColumnLabel('Дата отгрузки', Icons.password),
         tooltip: 'Дата отгрузки',
         onSort: (columnIndex, ascending) {
           setState(() {
@@ -256,7 +218,7 @@ class _TablePageState extends State<TablePage2> {
       ),
 
       DataColumn(
-        label: _buildColumnLabel('Договор', Icons.password,4),
+        label: _buildColumnLabel('Договор', Icons.password),
         tooltip: 'Договор',
         onSort: (columnIndex, ascending) {
           setState(() {
@@ -267,21 +229,18 @@ class _TablePageState extends State<TablePage2> {
         },
       ),
       DataColumn(
-        label: _buildColumnLabel('Серийный\nномер', Icons.numbers,5),
+        label: _buildColumnLabel('Серийный\nномер', Icons.numbers),
         tooltip: 'Серийный номер',
         onSort: (columnIndex, ascending) {
-
           setState(() {
             _sortAscending = ascending;
-
             _sortColumnIndex = columnIndex;
             _sort((item) => item['key'], columnIndex, ascending);
-
           });
         },
       ),
       DataColumn(
-        label: _buildColumnLabel('Лицензия', Icons.text_fields,6),
+        label: _buildColumnLabel('Лицензия', Icons.text_fields),
         tooltip: 'Лицензия',
         onSort: (columnIndex, ascending) {
           setState(() {
@@ -293,8 +252,7 @@ class _TablePageState extends State<TablePage2> {
       ),
       DataColumn(
         label: _buildColumnLabel(
-            'Тип лицензии', Icons.format_list_numbered_rounded,7
-        ),
+            'Тип лицензии', Icons.format_list_numbered_rounded),
         tooltip: 'Тип лицензии',
         onSort: (columnIndex, ascending) {
           setState(() {
@@ -305,7 +263,7 @@ class _TablePageState extends State<TablePage2> {
         },
       ),
       DataColumn(
-        label: _buildColumnLabel('Срок', Icons.date_range,8),
+        label: _buildColumnLabel('Срок', Icons.date_range),
         tooltip: 'срок',
         onSort: (columnIndex, ascending) {
           setState(() {
@@ -317,7 +275,7 @@ class _TablePageState extends State<TablePage2> {
       ),
       DataColumn(
         label:
-        _buildColumnLabel('Пропускная\nспособность', Icons.network_check,9),
+            _buildColumnLabel('Пропускная\nспособность', Icons.network_check),
         tooltip: 'Пропускная\nспособность',
         onSort: (columnIndex, ascending) {
           setState(() {
@@ -328,7 +286,7 @@ class _TablePageState extends State<TablePage2> {
         },
       ),
       DataColumn(
-        label: _buildColumnLabel('Макс кол-во\nпользователей', Icons.people,10),
+        label: _buildColumnLabel('Макс кол-во\nпользователей', Icons.people),
         tooltip: 'Макс кол-во\nпользователей',
         onSort: (columnIndex, ascending) {
           setState(() {
@@ -339,7 +297,7 @@ class _TablePageState extends State<TablePage2> {
         },
       ),
       DataColumn(
-        label: _buildColumnLabel('Макс кол-во\nсессий', Icons.account_tree,11),
+        label: _buildColumnLabel('Макс кол-во\nсессий', Icons.account_tree),
         tooltip: 'Макс кол-во\nсессий',
         onSort: (columnIndex, ascending) {
           setState(() {
@@ -351,7 +309,7 @@ class _TablePageState extends State<TablePage2> {
       ),
 
       DataColumn(
-        label: _buildColumnLabel('Код\nактивации', Icons.password,12),
+        label: _buildColumnLabel('Код\nактивации', Icons.password),
         tooltip: 'Код активации',
         onSort: (columnIndex, ascending) {
           setState(() {
@@ -367,12 +325,19 @@ class _TablePageState extends State<TablePage2> {
     if (_increaseValue) {
       columns.insert(
         0,
-        const DataColumn(
-          label: Icon(
-            Icons.print,
-            color: Colors.greenAccent,
+        DataColumn(
+          label: Row(
+            children: [
+              const Icon(
+                Icons.print,
+                color: Colors.greenAccent,
+              ),
+              Checkbox(
+                value: _selectAll,
+                onChanged: _toggleSelectAll,
+              ),
+            ],
           ),
-          tooltip: 'Выбрать для печати',
         ),
       );
     }
@@ -397,23 +362,20 @@ class _TablePageState extends State<TablePage2> {
         ),
       );
     }
-
+    // if (_increaseValue) {
+    //   columns.add(
+    //     const DataColumn(
+    //       label: Icon(
+    //         Icons.print,
+    //         color: Colors.greenAccent,
+    //       ),
+    //       tooltip: 'Выбрать для печати',
+    //     ),
+    //   );
+    // }
     return columns;
   }
-  DataCell buildTextDataCell(String text,
-      {String? nullText, int? maxLines, double? maxWidth}) {
-    return DataCell(
-      ConstrainedBox(
-        constraints: BoxConstraints(maxWidth: maxWidth ?? double.infinity),
-        child: Text(
-          text.isEmpty ? nullText ?? '-' : text,
-          overflow: TextOverflow.ellipsis,
-          maxLines: 1,
-          softWrap: false,
-        ),
-      ),
-    );
-  }
+
   String dropdownValue =
       'Сервер'; // добавляем переменную и устанавливаем значение по умолчанию
   bool isCheckedServer = false;
@@ -427,7 +389,7 @@ class _TablePageState extends State<TablePage2> {
       case 'Сервер':
         if (isCheckedServer && isCheckedConfirmationCode) {
           licenseTypeFilterController.text =
-          '104'; // сервер без случайности с КП
+              '104'; // сервер без случайности с КП
         } else if (isCheckedServer) {
           licenseTypeFilterController.text = '101'; // сервер без случайности
         } else if (isCheckedConfirmationCode) {
@@ -450,7 +412,7 @@ class _TablePageState extends State<TablePage2> {
       case 'Клиент':
         if (isCheckedServer && isCheckedConfirmationCode) {
           licenseTypeFilterController.text =
-          '106'; // клиент без случайности с КП
+              '106'; // клиент без случайности с КП
         } else if (isCheckedServer) {
           licenseTypeFilterController.text = '103'; // клиент без случайности
         } else if (isCheckedConfirmationCode) {
@@ -481,6 +443,12 @@ class _TablePageState extends State<TablePage2> {
       106: "Клиент без случайности с КП",
       100: "[htym"
     };
+    // var licenseTypeMap = {
+    //   1: "Сервер",
+    //   2: "Мост",
+    //   3: "Клиент",
+    // };
+
     bool shouldShowButtons = widget.userDto.role != "guest";
     return WillPopScope(
       onWillPop: () async {
@@ -532,13 +500,15 @@ class _TablePageState extends State<TablePage2> {
                           }).toList(),
                         ),
                         SizedBox(width: 20),
+                        // пространство между выпадающим списком и чекбоксами
+
                         Row(
                           children: [
                             const Text(
                               'Без физического источника',
                               style: const TextStyle(fontSize: 16.0),
                             ),
-
+                            // добавляем текстовую метку для чекбокса
                             Checkbox(
                               value: isCheckedServer,
                               onChanged: (bool? newValue) {
@@ -557,6 +527,7 @@ class _TablePageState extends State<TablePage2> {
                               'С кодом подтверждения',
                               style: const TextStyle(fontSize: 16.0),
                             ),
+                            // добавляем текстовую метку для чекбокса
                             Checkbox(
                               value: isCheckedConfirmationCode,
                               onChanged: (bool? newValue) {
@@ -571,6 +542,17 @@ class _TablePageState extends State<TablePage2> {
                         ),
                       ],
                     ),
+
+                    // TextField(
+                    //   controller: licenseTypeFilterController,
+                    //   onChanged: (value) {
+                    //     _filterItems(pageSize, currentPage);
+                    //     setState(() {});
+                    //   },
+                    //   decoration: const InputDecoration(
+                    //     labelText: 'Фильтр по типу лицензии',
+                    //   ),
+                    // ),
                     TextField(
                       controller: licenseKeyFilterController,
                       onChanged: (value) {
@@ -582,7 +564,7 @@ class _TablePageState extends State<TablePage2> {
                       ),
                     ),
                     CheckboxListTile(
-                      title: const Text('Выбрать документы для печати'),
+                      title: const Text('Печать нескольких'),
                       controlAffinity: ListTileControlAffinity.leading,
                       value: _increaseValue,
                       onChanged: (newValue) {
@@ -598,9 +580,8 @@ class _TablePageState extends State<TablePage2> {
                           onPressed: () {
                             sendSelectedItemsToServer(context, selectedIds);
                           },
-                          child: Text('Печать'),
+                          child: Text('Сформировать документы'),
                         ),
-
                       )
                   ],
                 ),
@@ -608,91 +589,157 @@ class _TablePageState extends State<TablePage2> {
               LayoutBuilder(builder: (context, constraints) {
                 double availableWidth = constraints.maxWidth;
                 if (availableWidth > 1250) {
-                  return Center(
-                    child: Container(
-                      width: MediaQuery.of(context).size.width,
-                      height: MediaQuery.of(context).size.height*0.5,
-                      decoration: BoxDecoration(
-                        border: Border.all(
-                          color: Colors.black,
-                          width: 3,
-                        ),
-                      ),
-                      margin: const EdgeInsets.all(15.0),
-                      child: Scrollbar(
-                        thumbVisibility: true,
-                        trackVisibility: true, // make the scrollbar easy to see
-                        controller: verticalScrollController,
-                        child: Scrollbar(
-                          thumbVisibility: true,
-                          trackVisibility: true,
-                          controller: horizontalScrollController,
-                          notificationPredicate: (notif) => notif.depth == 1,
-                          child: SingleChildScrollView(
-                            controller: verticalScrollController,
-                            scrollDirection: Axis.vertical,
-                            child: SingleChildScrollView(
-                              controller: horizontalScrollController,
-                              scrollDirection: Axis.horizontal,
-                              child: DataTable(
-
-                                showCheckboxColumn: false,
-                                headingRowColor: MaterialStateColor.resolveWith(
-                                        (Set<MaterialState> states) {
-                                      return Colors.blue;
-                                    }),
-                                border: TableBorder.all(
-                                  width: 2.0,
-                                  color: Colors.black45,
-                                ),
-                                columnSpacing: 5,
-                                sortAscending: _sortAscending,
-                                sortColumnIndex: _sortColumnIndex,
-                                columns: buildDataColumns(),
-                                rows: (nameFilterController.text.isEmpty &&
-                                    licenseTypeFilterController
-                                        .text.isEmpty &&
-                                    licenseNumberFilterController
-                                        .text.isEmpty &&
-                                    licenseKeyFilterController.text.isEmpty)
-                                    ? items.map(
-                                      (item) {
+                  return SingleChildScrollView(
+                    scrollDirection: Axis.vertical,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        child: DataTable(
+                          showCheckboxColumn: false,
+                          headingRowColor: MaterialStateColor.resolveWith(
+                              (Set<MaterialState> states) {
+                            return Colors.blue;
+                          }),
+                          border: TableBorder.all(
+                            width: 2.0,
+                            color: Colors.black45,
+                          ),
+                          columnSpacing: 10,
+                          sortAscending: _sortAscending,
+                          sortColumnIndex: _sortColumnIndex,
+                          columns: buildDataColumns(),
+                          rows: (nameFilterController.text.isEmpty &&
+                                  licenseTypeFilterController.text.isEmpty &&
+                                  licenseNumberFilterController.text.isEmpty &&
+                                  licenseKeyFilterController.text.isEmpty)
+                              ? items.map(
+                                  (item) {
                                     List<DataCell> cells = [
-                                      buildTextDataCell(item['name'], maxWidth: columnWidths[1]),
-                                      buildTextDataCell(item['UNNorUNP'], nullText: '-', maxWidth: columnWidths[2]),
-                                      buildTextDataCell(item['date_shipping'], nullText: '-', maxWidth: columnWidths[3]),
-                                      buildTextDataCell(item['dogovor'], nullText: '-', maxWidth: columnWidths[4]),
-                                      buildTextDataCell(item['key'], nullText: '-', maxWidth: columnWidths[5]),
-                                      buildTextDataCell(item['license_key'].toString(), nullText: '-', maxWidth: columnWidths[6]),
-                                      buildTextDataCell(licenseTypes[item['license_type']] ?? '-', nullText: '-', maxWidth: columnWidths[7]),
-                                      buildTextDataCell(
-                                        item['expiry_date'].toString().isEmpty ? 'бессрочно' : item['expiry_date'].toString(),
-                                        nullText: '-', maxWidth: columnWidths[8],
+                                      DataCell(
+                                        Center(
+                                          child: Text(item['name']),
+                                        ),
                                       ),
-                                      buildTextDataCell(item['max_bandwidth'].toString() == '0' ? '∞' : item['max_bandwidth'].toString(), nullText: '-', maxWidth: columnWidths[9]),
-                                      buildTextDataCell(item['max_users'].toString() == '0' ? '∞' : item['max_users'].toString(), nullText: '-', maxWidth: columnWidths[10]),
-                                      buildTextDataCell(item['max_vpn_sessions'].toString() == '0' ? '∞' : item['max_vpn_sessions'].toString(), nullText: '-', maxWidth: columnWidths[11]),
-                                      buildTextDataCell(item['generate_key'] ?? '-', nullText: '-', maxWidth: columnWidths[12]),
+                                      DataCell(
+                                        Center(
+                                          child: Text(
+                                            item['UNNorUNP'] == null
+                                                ? '-' // or any other symbol or text
+                                                : item['UNNorUNP'].toString(),
+                                          ),
+                                        ),
+                                      ),
+                                      DataCell(
+                                        Center(
+                                          child: Text(
+                                            item['date_shipping'] == null
+                                                ? '-' // or any other symbol or text
+                                                : item['date_shipping']
+                                                    .toString(),
+                                          ),
+                                        ),
+                                      ),
+                                      DataCell(
+                                        Center(
+                                          child: Text(
+                                            item['dogovor'] == null
+                                                ? '-' // or any other symbol or text
+                                                : item['dogovor'].toString(),
+                                          ),
+                                        ),
+                                      ),
+                                      DataCell(
+                                        Center(
+                                          child: Text(item['key']),
+                                        ),
+                                      ),
+                                      DataCell(
+                                        Center(
+                                          child: Text(
+                                            item['license_key']
+                                                .toString()
+                                                .replaceAll('-', ' '),
+                                            softWrap: true,
+                                          ),
+                                        ),
+                                      ),
+                                      DataCell(
+                                        Center(
+                                          child: Text(
+                                            licenseTypes[item['license_type']]!,
+                                          ),
+                                        ),
+                                      ),
+                                      DataCell(
+                                        Center(
+                                          child: Text(
+                                            item['expiry_date']
+                                                    .toString()
+                                                    .isEmpty
+                                                ? 'бессрочно'
+                                                : item['expiry_date']
+                                                    .toString(),
+                                          ),
+                                        ),
+                                      ),
+                                      DataCell(
+                                        Center(
+                                          child: Text(
+                                            item['max_bandwidth'] == '0'
+                                                ? '∞' // or any other symbol or text
+                                                : item['max_bandwidth']
+                                                    .toString(),
+                                          ),
+                                        ),
+                                      ),
+                                      DataCell(
+                                        Center(
+                                          child: Text(
+                                            item['max_users'] == 0
+                                                ? '∞' // or any other symbol or text
+                                                : item['max_users'].toString(),
+                                          ),
+                                        ),
+                                      ),
+                                      DataCell(
+                                        Center(
+                                          child: Text(
+                                            item['max_vpn_sessions'] == 0
+                                                ? '∞' // or any other symbol or text
+                                                : item['max_vpn_sessions']
+                                                    .toString(),
+                                          ),
+                                        ),
+                                      ),
+                                      DataCell(
+                                        Center(
+                                          child: Text(
+                                            item['generate_key'] == null
+                                                ? '-' // or any other symbol or text
+                                                : item['generate_key']
+                                                    .toString(),
+                                          ),
+                                        ),
+                                      ),
                                     ];
+                                    // Добавляем DataCell с кнопкой удаления только если роль пользователя не "user"
                                     if (widget.userDto.role == 'admin') {
                                       cells.add(
                                         DataCell(
                                           Center(
                                             child: ElevatedButton(
                                               onPressed: () {
-                                                deleteItem(
-                                                    context, item['id'],
-                                                        () {
-                                                      fetchItemsPage(context,
-                                                              (List<
-                                                              Map<String,
-                                                                  dynamic>>
-                                                          itemsList) {
-                                                            setState(() {
-                                                              items = itemsList;
-                                                            });
-                                                          });
+                                                deleteItem(context, item['id'],
+                                                    () {
+                                                  fetchItemsPage(context, (List<
+                                                          Map<String, dynamic>>
+                                                      itemsList) {
+                                                    setState(() {
+                                                      items = itemsList;
                                                     });
+                                                  });
+                                                });
                                               },
                                               child: const Icon(
                                                 Icons.delete,
@@ -709,11 +756,8 @@ class _TablePageState extends State<TablePage2> {
                                           Center(
                                             child: ElevatedButton(
                                               onPressed: () {
-                                                changeItem(
-                                                    context,
-                                                    item['id'],
-                                                    item,
-                                                    setState);
+                                                changeItem(context, item['id'],
+                                                    item, setState);
                                               },
                                               child: const Icon(
                                                 Icons.edit,
@@ -730,20 +774,19 @@ class _TablePageState extends State<TablePage2> {
                                         DataCell(
                                           Center(
                                             child: Checkbox(
-                                              value: checkBoxStates[
-                                              item['id']] ??
-                                                  false,
+                                              value:
+                                                  checkBoxStates[item['id']] ??
+                                                      false,
                                               onChanged: (value) {
                                                 setState(() {
-                                                  checkBoxStates[
-                                                  item['id']] =
+                                                  checkBoxStates[item['id']] =
                                                       value ?? false;
                                                   if (value ?? false) {
                                                     selectedIds.add(item[
-                                                    'id']); // Add id to selectedIds when checkbox is checked
+                                                        'id']); // Add id to selectedIds when checkbox is checked
                                                   } else {
                                                     selectedIds.remove(item[
-                                                    'id']); // Remove id from selectedIds when checkbox is unchecked
+                                                        'id']); // Remove id from selectedIds when checkbox is unchecked
                                                   }
                                                 });
                                               },
@@ -754,20 +797,17 @@ class _TablePageState extends State<TablePage2> {
                                     }
                                     return DataRow(
                                       onSelectChanged: (selected) {
-                                        if (selected != null &&
-                                            selected) {
+                                        if (selected != null && selected) {
                                           showLicenseDetailsDialog(
-                                              context,
-                                              item,
-                                              widget.userDto);
+                                              context, item, widget.userDto);
                                         }
                                       },
                                       cells: cells,
                                     );
                                   },
                                 ).toList()
-                                    : filteredItems.map(
-                                      (item) {
+                              : filteredItems.map(
+                                  (item) {
                                     List<DataCell> cells = [
                                       DataCell(
                                         Center(
@@ -779,8 +819,7 @@ class _TablePageState extends State<TablePage2> {
                                           child: Text(
                                             item['UNNorUNP'] == null
                                                 ? '-' // or any other symbol or text
-                                                : item['UNNorUNP']
-                                                .toString(),
+                                                : item['UNNorUNP'].toString(),
                                           ),
                                         ),
                                       ),
@@ -790,7 +829,7 @@ class _TablePageState extends State<TablePage2> {
                                             item['date_shipping'] == null
                                                 ? '-' // or any other symbol or text
                                                 : item['date_shipping']
-                                                .toString(),
+                                                    .toString(),
                                           ),
                                         ),
                                       ),
@@ -799,8 +838,7 @@ class _TablePageState extends State<TablePage2> {
                                           child: Text(
                                             item['dogovor'] == null
                                                 ? '-' // or any other symbol or text
-                                                : item['dogovor']
-                                                .toString(),
+                                                : item['dogovor'].toString(),
                                           ),
                                         ),
                                       ),
@@ -812,16 +850,14 @@ class _TablePageState extends State<TablePage2> {
                                       DataCell(
                                         Center(
                                           child: Text(
-                                            item['license_key']
-                                                .toString(),
+                                            item['license_key'].toString(),
                                           ),
                                         ),
                                       ),
                                       DataCell(
                                         Center(
                                           child: Text(
-                                            licenseTypes[
-                                            item['license_type']]!,
+                                            licenseTypes[item['license_type']]!,
                                           ),
                                         ),
                                       ),
@@ -829,11 +865,11 @@ class _TablePageState extends State<TablePage2> {
                                         Center(
                                           child: Text(
                                             item['expiry_date']
-                                                .toString()
-                                                .isEmpty
+                                                    .toString()
+                                                    .isEmpty
                                                 ? 'бессрочно'
                                                 : item['expiry_date']
-                                                .toString(),
+                                                    .toString(),
                                           ),
                                         ),
                                       ),
@@ -843,7 +879,7 @@ class _TablePageState extends State<TablePage2> {
                                             item['max_bandwidth'] == '0'
                                                 ? '∞' // or any other symbol or text
                                                 : item['max_bandwidth']
-                                                .toString(),
+                                                    .toString(),
                                           ),
                                         ),
                                       ),
@@ -852,8 +888,7 @@ class _TablePageState extends State<TablePage2> {
                                           child: Text(
                                             item['max_users'] == 0
                                                 ? '∞' // or any other symbol or text
-                                                : item['max_users']
-                                                .toString(),
+                                                : item['max_users'].toString(),
                                           ),
                                         ),
                                       ),
@@ -863,7 +898,7 @@ class _TablePageState extends State<TablePage2> {
                                             item['max_vpn_sessions'] == 0
                                                 ? '∞' // or any other symbol or text
                                                 : item['max_vpn_sessions']
-                                                .toString(),
+                                                    .toString(),
                                           ),
                                         ),
                                       ),
@@ -873,30 +908,29 @@ class _TablePageState extends State<TablePage2> {
                                             item['generate_key'] == null
                                                 ? '-' // or any other symbol or text
                                                 : item['generate_key']
-                                                .toString(),
+                                                    .toString(),
                                           ),
                                         ),
                                       ),
                                     ];
+
+                                    // Добавляем DataCell с кнопкой удаления только если роль пользователя не "user"
                                     if (widget.userDto.role != 'user') {
                                       cells.add(
                                         DataCell(
                                           Center(
                                             child: ElevatedButton(
                                               onPressed: () {
-                                                deleteItem(
-                                                    context, item['id'],
-                                                        () {
-                                                      fetchItemsPage(context,
-                                                              (List<
-                                                              Map<String,
-                                                                  dynamic>>
-                                                          itemsList) {
-                                                            setState(() {
-                                                              items = itemsList;
-                                                            });
-                                                          });
+                                                deleteItem(context, item['id'],
+                                                    () {
+                                                  fetchItemsPage(context, (List<
+                                                          Map<String, dynamic>>
+                                                      itemsList) {
+                                                    setState(() {
+                                                      items = itemsList;
                                                     });
+                                                  });
+                                                });
                                               },
                                               child: const Icon(
                                                 Icons.delete,
@@ -913,11 +947,8 @@ class _TablePageState extends State<TablePage2> {
                                           Center(
                                             child: ElevatedButton(
                                               onPressed: () {
-                                                changeItem(
-                                                    context,
-                                                    item['id'],
-                                                    item,
-                                                    setState);
+                                                changeItem(context, item['id'],
+                                                    item, setState);
                                               },
                                               child: const Icon(
                                                 Icons.edit,
@@ -936,8 +967,9 @@ class _TablePageState extends State<TablePage2> {
                                           Center(
                                             child: Checkbox(
                                               value: false,
-
+                                              // Provide the value for the checkbox
                                               onChanged: (value) {
+                                                // Handle checkbox state changes here
                                               },
                                             ),
                                           ),
@@ -946,96 +978,94 @@ class _TablePageState extends State<TablePage2> {
                                     }
                                     return DataRow(
                                       onSelectChanged: (selected) {
-                                        if (selected != null &&
-                                            selected) {
+                                        if (selected != null && selected) {
                                           showLicenseDetailsDialog(
-                                              context,
-                                              item,
-                                              widget.userDto);
+                                              context, item, widget.userDto);
                                         }
                                       },
                                       cells: cells,
                                     );
                                   },
                                 ).toList(),
-                              ),
-                            ),
-                          ),
                         ),
                       ),
                     ),
                   );
                 } else {
+                  // int columnCount = availableWidth > 600 ? 2 : 1;
                   return Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: (nameFilterController.text.isEmpty &&
-                        licenseTypeFilterController.text.isEmpty &&
-                        licenseKeyFilterController.text.isEmpty)
+                            licenseTypeFilterController.text.isEmpty &&
+                            licenseKeyFilterController.text.isEmpty)
                         ? items.map((item) {
-                      return InkWell(
-                        onTap: () {
-                          showLicenseDetailsDialog(
-                              context, item, widget.userDto);
-                        },
-                        child: Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(20.0),
-                            child: Column(
-                              crossAxisAlignment:
-                              CrossAxisAlignment.start,
-                              children: [
-                                Text('Название: ${item['name']}'),
-                                Text('Срок: ${item['expiry_date']}'),
-                                Text(
-                                    'пропускная способность: ${item['max_bandwidth']}'),
-                                Text(
-                                    'пользователи: ${item['max_users']}'),
-                                Text(
-                                    'сессии: ${item['max_vpn_sessions']}'),
-                                Text(
-                                    'тип лицензии: ${item['license_type']}'),
-                                Text(
-                                    'лицензионный ключ: ${item['license_key']}'),
-                                // Text(
-                                //     'ключ активации: ${item['generate_key']}'),
-                                // Добавьте другие поля по мере необходимости
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList()
+                            return InkWell(
+                              onTap: () {
+                                showLicenseDetailsDialog(
+                                    context, item, widget.userDto);
+                              },
+                              child: Card(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(20.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text('Название: ${item['name']}'),
+                                      Text('Срок: ${item['expiry_date']}'),
+                                      Text(
+                                          'пропускная способность: ${item['max_bandwidth']}'),
+                                      Text(
+                                          'пользователи: ${item['max_users']}'),
+                                      Text(
+                                          'сессии: ${item['max_vpn_sessions']}'),
+                                      Text(
+                                          'тип лицензии: ${item['license_type']}'),
+                                      Text(
+                                          'лицензионный ключ: ${item['license_key']}'),
+                                      // Text(
+                                      //     'ключ активации: ${item['generate_key']}'),
+                                      // Добавьте другие поля по мере необходимости
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList()
                         : filteredItems.map((item) {
-                      return InkWell(
-                        onTap: () {
-                          showLicenseDetailsDialog(
-                              context, item, widget.userDto);
-                        },
-                        child: Card(
-                          child: Padding(
-                            padding: const EdgeInsets.all(8.0),
-                            child: Column(
-                              crossAxisAlignment:
-                              CrossAxisAlignment.start,
-                              children: [
-                                Text('Название: ${item['name']}'),
-                                Text('Срок: ${item['expiry_date']}'),
-                                Text(
-                                    'пропускная способность: ${item['max_bandwidth']}'),
-                                Text(
-                                    'пользователи: ${item['max_users']}'),
-                                Text(
-                                    'сессии: ${item['max_vpn_sessions']}'),
-                                Text(
-                                    'тип лицензии: ${item['license_type']}'),
-                                Text(
-                                    'лицензионный ключ: ${item['license_key']}'),
-                              ],
-                            ),
-                          ),
-                        ),
-                      );
-                    }).toList(),
+                            return InkWell(
+                              onTap: () {
+                                showLicenseDetailsDialog(
+                                    context, item, widget.userDto);
+                              },
+                              child: Card(
+                                child: Padding(
+                                  padding: const EdgeInsets.all(8.0),
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      Text('Название: ${item['name']}'),
+                                      Text('Срок: ${item['expiry_date']}'),
+                                      Text(
+                                          'пропускная способность: ${item['max_bandwidth']}'),
+                                      Text(
+                                          'пользователи: ${item['max_users']}'),
+                                      Text(
+                                          'сессии: ${item['max_vpn_sessions']}'),
+                                      Text(
+                                          'тип лицензии: ${item['license_type']}'),
+                                      Text(
+                                          'лицензионный ключ: ${item['license_key']}'),
+                                      // Text(
+                                      //     'ключ активации: ${item['generate_key']}'),
+                                      // Добавьте другие поля по мере необходимости
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          }).toList(),
                   );
                 }
               }),
@@ -1047,22 +1077,23 @@ class _TablePageState extends State<TablePage2> {
                     icon: const Icon(Icons.arrow_back),
                     onPressed: currentPage > 1
                         ? () {
-                      setState(() {
-                        currentPage--;
-                        pageController.text = currentPage.toString();
-                        fetchItemsPage(context,
-                                (List<Map<String, dynamic>> itemsList) {
-                              setState(() {
-                                items = itemsList;
+                            setState(() {
+                              currentPage--;
+                              pageController.text = currentPage.toString();
+                              fetchItemsPage(context,
+                                  (List<Map<String, dynamic>> itemsList) {
+                                setState(() {
+                                  items = itemsList;
+                                });
                               });
+                              _filterItems(pageSize,
+                                  currentPage); // Загружаем предыдущую страницу
                             });
-                        _filterItems(pageSize,
-                            currentPage); // Загружаем предыдущую страницу
-                      });
-                    }
+                          }
                         : null,
                   ),
                   const Text('Страница: '),
+                  // Поле ввода для номера страницы
                   SizedBox(
                     width: 50, // Ширина поля TextField
                     child: TextField(
@@ -1073,11 +1104,11 @@ class _TablePageState extends State<TablePage2> {
                             ? int.tryParse(value) ?? currentPage
                             : 1;
                         fetchItemsPage(context,
-                                (List<Map<String, dynamic>> itemsList) {
-                              setState(() {
-                                items = itemsList;
-                              });
-                            });
+                            (List<Map<String, dynamic>> itemsList) {
+                          setState(() {
+                            items = itemsList;
+                          });
+                        });
                         _filterItems(pageSize, currentPage);
                       },
                     ),
@@ -1086,22 +1117,31 @@ class _TablePageState extends State<TablePage2> {
                   // Кнопка для перехода на следующую страницу
                   IconButton(
                     icon: const Icon(Icons.arrow_forward),
-                    onPressed: () {
-                      setState(() {
-                        currentPage++;
-                        pageController.text = currentPage
-                            .toString(); // Обновляем значение в TextField
-                        fetchItemsPage(context,
-                                (List<Map<String, dynamic>> itemsList) {
-                              setState(() {
-                                items = itemsList;
-                              });
+                    onPressed: currentPage < totalPages
+                        ? () {
+                            setState(() {
+                              // Проверяем, не превышает ли текущая страница общее количество страниц
+                              if (currentPage < totalPages) {
+                                currentPage++;
+                                pageController.text = currentPage
+                                    .toString(); // Обновляем значение в TextField
+                                fetchItemsPage(context,
+                                    (List<Map<String, dynamic>> itemsList) {
+                                  setState(() {
+                                    items = itemsList;
+                                  });
+                                });
+                                _filterItems(pageSize,
+                                    currentPage); // Загружаем следующую страницу
+                              } else {
+                                // Если текущая страница равна или превышает общее количество страниц, ничего не делаем
+                                // Можете добавить какое-то уведомление пользователю, что это последняя страница
+                              }
                             });
-                        _filterItems(pageSize,
-                            currentPage); // Загружаем следующую страницу
-                      });
-                    },
+                          }
+                        : null,
                   ),
+
                   const Text('Количество строк:'),
                   // Бокс для ввода размера страницы
                   SizedBox(
@@ -1114,13 +1154,13 @@ class _TablePageState extends State<TablePage2> {
                           pageSize = int.tryParse(value) ?? 10;
                           // Обновляем значение pageSize
                           fetchItemsPage(context,
-                                  (List<Map<String, dynamic>> itemsList) {
-                                setState(() {
-                                  items = itemsList;
-                                });
-                              });
+                              (List<Map<String, dynamic>> itemsList) {
+                            setState(() {
+                              items = itemsList;
+                            });
+                          });
                           _filterItems(pageSize,
-                              currentPage);
+                              currentPage); // Перезагружаем текущую страницу с новым размером
                         });
                       },
                     ),
@@ -1132,15 +1172,15 @@ class _TablePageState extends State<TablePage2> {
         ),
         floatingActionButton: shouldShowButtons
             ? FloatingActionButton(
-          onPressed: () {
-            Navigator.of(context).pushReplacement(PageTransition(
-              type: PageTransitionType.leftToRight,
-              child: HomePage(userDto: widget.userDto),
-            ));
-          },
-          backgroundColor: Colors.greenAccent,
-          child: const Icon(Icons.add), // Цвет кнопки
-        )
+                onPressed: () {
+                  Navigator.of(context).pushReplacement(PageTransition(
+                    type: PageTransitionType.leftToRight,
+                    child: HomePage(userDto: widget.userDto),
+                  ));
+                },
+                backgroundColor: Colors.greenAccent,
+                child: const Icon(Icons.add), // Цвет кнопки
+              )
             : Container(),
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       ),

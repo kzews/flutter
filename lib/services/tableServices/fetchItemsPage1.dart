@@ -4,25 +4,18 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import '../../environment.dart';
-
 int currentPage = 1;
-int pageSize = 10;
-int totalPages = 1; // Новая переменная для хранения общего количества страниц
+int pageSize = 5;
 
 List<Map<String, dynamic>> items = [];
-
-Future<void> fetchItemsPage(
-    BuildContext context, Function(List<Map<String, dynamic>>) callback) async {
+Future<void> fetchItemsPage1(BuildContext context, Function(List<Map<String, dynamic>>) callback) async {
   try {
     final response = await http.get(
-        Uri.parse('$API_URL/api/fetchItems?page=$currentPage&size=$pageSize'));
+        Uri.parse('$API_URL/api/fetchItems1?page=$currentPage&size=$pageSize'));
 
     if (response.statusCode == 200) {
-      final Map<String, dynamic> responseData = json.decode(response.body);
-      final List<Map<String, dynamic>> itemsList =
-      List<Map<String, dynamic>>.from(responseData['items']);
-      totalPages = responseData['total_pages']; // Обновляем значение totalPages
-
+      final List<dynamic> responseData = json.decode(response.body);
+      final List<Map<String, dynamic>> itemsList = List<Map<String, dynamic>>.from(responseData);
       callback(itemsList);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(

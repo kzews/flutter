@@ -6,6 +6,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttersrc/screens/table.dart';
 import 'package:fluttersrc/screens/routes_page.dart';
+import 'package:fluttersrc/screens/table2.dart';
 import 'package:fluttersrc/screens/table_resize.dart';
 import 'package:page_transition/page_transition.dart';
 

@@ -5,6 +5,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:fluttersrc/screens/table.dart';
+import 'package:fluttersrc/screens/table2.dart';
 import 'package:http/http.dart' as http;
 import 'package:page_transition/page_transition.dart';
 
@@ -45,6 +46,7 @@ class _HomePageState extends State<HomePage> {
 
   List<Map<String, dynamic>> items = [];
   String? dateSend;
+  String? expireDateForBase;
   DateTime? currentBackPressTime;
   bool _increaseValue = false;
   int _selectedValue = 0;
@@ -109,7 +111,7 @@ class _HomePageState extends State<HomePage> {
         },
         body: jsonEncode(<String, dynamic>{
           'nameCreator': widget.userDto.login,
-          'DateCreate': DateTime.now().toString(),
+          'DateCreate': DateTime.now().toString().split('.').first,
           'name': _nameController.text,
           'license_type': int.parse(_licenseTypeController.text),
           'expiry_date': dateSend.toString(),
@@ -124,8 +126,10 @@ class _HomePageState extends State<HomePage> {
           'passwordBIOS': _passwordBiosController.text,
           'passwordRoot': _passwordRootController.text,
           'remark': remarkController.text,
+          'expireDateForBase': expireDateForBase.toString(),
         }),
       );
+
 
 
       if (response.statusCode == 201) {
@@ -185,7 +189,9 @@ class _HomePageState extends State<HomePage> {
       lastDate: DateTime(2101),
     );
     if (picked != null && picked != DateTime.now()) {
-      _expiryDateController.text = "${picked.day}-${picked.month}-${picked.year}";
+      String month = picked.month.toString().padLeft(2, '0');
+      _expiryDateController.text = "${picked.day}-$month-${picked.year}";
+      expireDateForBase = _expiryDateController.text;
       dateSend ="${picked.year}/${picked.month}/${picked.day}";
     }
   }
@@ -199,8 +205,9 @@ class _HomePageState extends State<HomePage> {
       lastDate: DateTime(2101),
     );
     if (picked != null && picked != DateTime.now()) {
+      String month = picked.month.toString().padLeft(2, '0');
       _dateShippingController.text =
-          "${picked.day}-${picked.month}-${picked.year}";
+          "${picked.day}-$month-${picked.year}";
     }
   }
 
@@ -494,38 +501,41 @@ class _HomePageState extends State<HomePage> {
                   ),
                   Padding(
                     padding: EdgeInsets.symmetric(
-                        horizontal: MediaQuery.of(context).size.width > 1500
-                            ? 200
-                            : MediaQuery.of(context).size.width > 1000
-                            ? 50
-                            : 50),
+                      horizontal: MediaQuery.of(context).size.width > 1500
+                          ? 200
+                          : MediaQuery.of(context).size.width > 1000
+                          ? 50
+                          : 50,
+                    ),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        ElevatedButton(
-                          // onPressed: (_isBiosPasswordValid && _isRootPasswordValid) ? addItem : null,
-                          // child: const Text('Сгенерировать лицензию(и)'),
-                          onPressed: () {
-                            if (_formKey.currentState?.validate() ?? false) {
-                              // Прошли валидацию
-                              addItem();
-                            }
-                            print('bad validation');
-                            // Не прошли валидацию
-                          },
-                          child: const Text('Сгенерировать лицензию(и)'),
+                        Expanded( // Добавляем Expanded
+                          child: ElevatedButton(
+                            onPressed: () {
+                              if (_formKey.currentState?.validate() ?? false) {
+                                // Прошли валидацию
+                                addItem();
+                              }
+                              print('bad validation');
+                              // Не прошли валидацию
+                            },
+                            child: const Text('Сгенерировать лицензию(и)'),
+                          ),
                         ),
                         const SizedBox(width: 8), // Add spacing between buttons
-                        ElevatedButton(
-                          onPressed: () async {
-                            _condirmBackToTable();
-                          },
-
-                          child: const Text('Переход к таблице'),
+                        Expanded( // Добавляем Expanded
+                          child: ElevatedButton(
+                            onPressed: () async {
+                              _condirmBackToTable();
+                            },
+                            child: const Text('Переход к таблице'),
+                          ),
                         ),
                       ],
                     ),
                   ),
+
                 ],
               ),
             ),
