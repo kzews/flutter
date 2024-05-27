@@ -12,20 +12,30 @@ import '../../objects/userDto.dart';
 
 Future<void> showLicenseDetailsDialog(
     BuildContext context, Map<String, dynamic> item, UserDto userDto) async {
-  // bool shouldShowButtons = widget.userDto.role != "user";
+  var licenseTypes = {
+    1: "Сервер",
+    2: "Мост",
+    3: "Клиент",
+    4: "Сервер с КП",
+    5: "Мост с КП",
+    6: "Клиент с КП",
+    101: "Сервер без физического источника случайности",
+    102: "Мост без физического источника случайности",
+    103: "Клиент без физического источника случайности",
+    104: "Сервер без физического источника случайности с КП",
+    105: "Мост без физического источника случайности с КП",
+    106: "Клиент без физического источника случайности с КП",
+  };
   await showDialog(
     context: context,
     builder: (BuildContext context) {
       bool isActivationButtonVisible = !(item['license_type'] == 1 ||
           item['license_type'] == 2 ||
-          item['license_type'] == 3);
-      // return Scaffold(
-      //   body:
+          item['license_type'] == 3 ||
+          userDto.role == 'guest');
       return AlertDialog(
         scrollable: true,
-        // insetPadding: EdgeInsets.all(300),
         title: const Text('Данные лицензии'),
-
         content: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -61,7 +71,8 @@ Future<void> showLicenseDetailsDialog(
             Text(
                 'Максимальное количество сессий: ${item['max_vpn_sessions'] == 0 ? 'без ограничений' : item['max_vpn_sessions']}'),
             Text(
-                'Тип лицензии: ${item['license_type'] == 1 ? 'сервер' : item['license_type'] == 3 ? 'клиент' : item['license_type'] == 2 ? 'мост' : item['license_type']}'),
+              'Тип лицензии: ${licenseTypes[item['license_type']] ?? item['license_type']}',
+            ),
             Text('Номер лицензии: ${item['license_number']}'),
             Text('Создатель: ${item['nameCreator'] ?? 'неизвестно'}'),
             Text('Дата создания: ${item['DateCtrate'] ?? 'неизвестно'}'),
@@ -76,7 +87,6 @@ Future<void> showLicenseDetailsDialog(
                 'Примечание: ${item['remark'] ?? ''}',
               ),
             ],
-
           ],
         ),
         actions: [

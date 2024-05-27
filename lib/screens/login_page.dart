@@ -109,9 +109,11 @@ class _LoginPageState extends State<LoginPage> {
         //     builder: (context) => Home1Page(userDto: userDto),
         //   ),
         // ): Navigator.of(context).pushReplacement(
+        Navigator.of(context).pushReplacement(
           MaterialPageRoute(
             builder: (context) => TablePage(userDto: userDto),
-          );
+          ),
+        );
       } else {
         // Обработка других статусов ответа (например, когда токен просрочен или невалиден)
         // Возможно, здесь вы захотите отобразить сообщение об ошибке или выполнить другие действия

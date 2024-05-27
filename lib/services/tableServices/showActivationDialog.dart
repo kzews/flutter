@@ -15,7 +15,6 @@ Future<void> showActivationDialog(
     builder: (BuildContext context) {
       return AlertDialog(
         scrollable: true,
-        // insetPadding: EdgeInsets.all(400),
         title: const Text('Введите код активации'),
         content: Column(
           children: [
@@ -35,7 +34,7 @@ Future<void> showActivationDialog(
               activateLicense(context, item['license_type'],
                   item['license_number'], activationCode);
 
-              Navigator.of(context).pop();
+              // Navigator.of(context).pop();
             },
             child: const Text('Активировать'),
           ),
@@ -79,6 +78,8 @@ Future<void> activateLicense(BuildContext context, int licenseType,
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
+                Navigator.of(context).pop();
+                // Navigator.of(context).pop();
               },
               child: const Text('OK'),
             ),

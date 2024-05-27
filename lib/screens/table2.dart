@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttersrc/appBar.dart';
+import 'package:fluttersrc/services/deleteSelectedItems.dart';
 import 'package:http/http.dart' as http;
 import 'package:page_transition/page_transition.dart';
 
@@ -65,8 +66,10 @@ class _TablePageState extends State<TablePage> {
   TextEditingController licenseTypeFilterController = TextEditingController();
   TextEditingController licenseNumberFilterController = TextEditingController();
   TextEditingController licenseKeyFilterController = TextEditingController();
-  TextEditingController pageController = TextEditingController(text: '1');
-  TextEditingController pageSizeController = TextEditingController(text: '10');
+  TextEditingController pageController =
+      TextEditingController(text: '$currentPage');
+  TextEditingController pageSizeController =
+      TextEditingController(text: '$pageSize');
 
   @override
   void initState() {
@@ -362,22 +365,12 @@ class _TablePageState extends State<TablePage> {
         ),
       );
     }
-    // if (_increaseValue) {
-    //   columns.add(
-    //     const DataColumn(
-    //       label: Icon(
-    //         Icons.print,
-    //         color: Colors.greenAccent,
-    //       ),
-    //       tooltip: 'Выбрать для печати',
-    //     ),
-    //   );
-    // }
+
     return columns;
   }
 
   String dropdownValue =
-      'Сервер'; // добавляем переменную и устанавливаем значение по умолчанию
+      'Любой'; // добавляем переменную и устанавливаем значение по умолчанию
   bool isCheckedServer = false;
   bool isCheckedConfirmationCode = false;
 
@@ -435,12 +428,12 @@ class _TablePageState extends State<TablePage> {
       4: "Сервер с КП",
       5: "Мост с КП",
       6: "Клиент с КП",
-      101: "Сервер без случайности",
-      102: "Мост без случайности",
-      103: "Клиент без случайности",
-      104: "Сервер без случайности с КП",
-      105: "Мост без случайности с КП",
-      106: "Клиент без случайности с КП",
+      101: "Сервер без физ. источника",
+      102: "Мост без физ. источника",
+      103: "Клиент без физ. источника",
+      104: "Сервер без физ. источника с КП",
+      105: "Мост без физ. источника с КП",
+      106: "Клиент без физ. источника с КП",
       100: "[htym"
     };
     // var licenseTypeMap = {
@@ -501,44 +494,63 @@ class _TablePageState extends State<TablePage> {
                         ),
                         SizedBox(width: 20),
                         // пространство между выпадающим списком и чекбоксами
-
-                        Row(
-                          children: [
-                            const Text(
-                              'Без физического источника',
-                              style: const TextStyle(fontSize: 16.0),
-                            ),
-                            // добавляем текстовую метку для чекбокса
-                            Checkbox(
-                              value: isCheckedServer,
-                              onChanged: (bool? newValue) {
-                                setState(() {
-                                  isCheckedServer = newValue!;
-                                  updateLicenseType();
-                                  _filterItems(pageSize, currentPage);
-                                });
-                              },
-                            ),
-                          ],
+                        InkWell(
+                          onTap: () {
+                            setState(() {
+                              isCheckedServer = !isCheckedServer;
+                              updateLicenseType();
+                              _filterItems(pageSize, currentPage);
+                            });
+                          },
+                          child: Row(
+                            children: [
+                              const Text(
+                                'Без физического источника',
+                                style: const TextStyle(fontSize: 16.0),
+                              ),
+                              // добавляем текстовую метку для чекбокса
+                              Checkbox(
+                                value: isCheckedServer,
+                                onChanged: (bool? newValue) {
+                                  setState(() {
+                                    isCheckedServer = newValue!;
+                                    updateLicenseType();
+                                    _filterItems(pageSize, currentPage);
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
                         ),
-                        Row(
-                          children: [
-                            Text(
-                              'С кодом подтверждения',
-                              style: const TextStyle(fontSize: 16.0),
-                            ),
-                            // добавляем текстовую метку для чекбокса
-                            Checkbox(
-                              value: isCheckedConfirmationCode,
-                              onChanged: (bool? newValue) {
-                                setState(() {
-                                  isCheckedConfirmationCode = newValue!;
-                                  updateLicenseType();
-                                  _filterItems(pageSize, currentPage);
-                                });
-                              },
-                            ),
-                          ],
+                        SizedBox(width: 20), // Пространство между чекбоксами
+                        InkWell(
+                          onTap: () {
+                            setState(() {
+                              isCheckedConfirmationCode =
+                                  !isCheckedConfirmationCode;
+                              updateLicenseType();
+                              _filterItems(pageSize, currentPage);
+                            });
+                          },
+                          child: Row(
+                            children: [
+                              Text(
+                                'С кодом подтверждения',
+                                style: const TextStyle(fontSize: 16.0),
+                              ),
+                              // добавляем текстовую метку для чекбокса
+                              Checkbox(
+                                value: isCheckedConfirmationCode,
+                                onChanged: (bool? newValue) {
+                                  setState(() {
+                                    isCheckedConfirmationCode = newValue!;
+                                    updateLicenseType();
+                                    _filterItems(pageSize, currentPage);
+                                  });
+                                },
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),
@@ -564,7 +576,7 @@ class _TablePageState extends State<TablePage> {
                       ),
                     ),
                     CheckboxListTile(
-                      title: const Text('Печать нескольких'),
+                      title: const Text('Выбор нескольких нескольких'),
                       controlAffinity: ListTileControlAffinity.leading,
                       value: _increaseValue,
                       onChanged: (newValue) {
@@ -575,14 +587,35 @@ class _TablePageState extends State<TablePage> {
                     ),
                     if (_increaseValue)
                       Container(
-                        alignment: Alignment.bottomLeft,
-                        child: ElevatedButton(
-                          onPressed: () {
-                            sendSelectedItemsToServer(context, selectedIds);
-                          },
-                          child: Text('Сформировать документы'),
-                        ),
-                      )
+                          alignment: Alignment.bottomLeft,
+                          child: Row(
+                            children: [
+                              ElevatedButton(
+                                onPressed: () {
+                                  // for (int i = 0; i < items.length; i++) {
+                                  //   checkBoxStates[i] = false;
+                                  // }
+                                  sendSelectedItemsToServer(
+                                      context, selectedIds);
+                                },
+                                child: Text('Сформировать выбранные документы'),
+                              ),
+                              SizedBox(width: 20),
+                              ElevatedButton(
+                                onPressed: () {
+                                  deleteSelectedItems(context, selectedIds, () {
+                                    fetchItemsPage(context,
+                                        (List<Map<String, dynamic>> itemsList) {
+                                      setState(() {
+                                        items = itemsList;
+                                      });
+                                    });
+                                  });
+                                },
+                                child: Text('Удалить выбранные'),
+                              ),
+                            ],
+                          ))
                   ],
                 ),
               ),
@@ -597,8 +630,8 @@ class _TablePageState extends State<TablePage> {
                         width: MediaQuery.of(context).size.width,
                         child: DataTable(
                           showCheckboxColumn: false,
-                          headingRowColor: MaterialStateColor.resolveWith(
-                              (Set<MaterialState> states) {
+                          headingRowColor: WidgetStateColor.resolveWith(
+                              (Set<WidgetState> states) {
                             return Colors.blue;
                           }),
                           border: TableBorder.all(
@@ -960,16 +993,26 @@ class _TablePageState extends State<TablePage> {
                                       );
                                     }
                                     if (_increaseValue) {
-                                      selectedIds.add(item['id']);
-
-                                      cells.add(
+                                      cells.insert(
+                                        0,
                                         DataCell(
                                           Center(
                                             child: Checkbox(
-                                              value: false,
-                                              // Provide the value for the checkbox
+                                              value:
+                                              checkBoxStates[item['id']] ??
+                                                  false,
                                               onChanged: (value) {
-                                                // Handle checkbox state changes here
+                                                setState(() {
+                                                  checkBoxStates[item['id']] =
+                                                      value ?? false;
+                                                  if (value ?? false) {
+                                                    selectedIds.add(item[
+                                                    'id']); // Add id to selectedIds when checkbox is checked
+                                                  } else {
+                                                    selectedIds.remove(item[
+                                                    'id']); // Remove id from selectedIds when checkbox is unchecked
+                                                  }
+                                                });
                                               },
                                             ),
                                           ),

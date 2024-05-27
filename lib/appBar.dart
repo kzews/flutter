@@ -103,7 +103,8 @@ class AppDrawer extends StatelessWidget {
     );
   }
 
-  void _showEditDialog(BuildContext context) {
+  void
+  _showEditDialog(BuildContext context) {
     String newLogin = '';
     String newPassword = '';
     // String confirmPassword = '';

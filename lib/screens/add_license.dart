@@ -3,6 +3,7 @@ import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
 import 'package:fluttersrc/screens/table.dart';
 import 'package:fluttersrc/screens/table2.dart';
@@ -31,11 +32,11 @@ class _HomePageState extends State<HomePage> {
   final TextEditingController _dogovorController = TextEditingController();
   final TextEditingController _UNNorUNPController = TextEditingController();
   final TextEditingController _maxVpnSessionsController =
-      TextEditingController(text: '0');
+      TextEditingController(text: '');
   final TextEditingController _maxBandwidthController =
-      TextEditingController(text: '0');
+      TextEditingController(text: '');
   final TextEditingController _maxUsersController =
-      TextEditingController(text: '0');
+      TextEditingController(text: '');
   final TextEditingController _keyController = TextEditingController();
   final TextEditingController _qtyController = TextEditingController(text: '1');
   final TextEditingController _passwordBiosController = TextEditingController();
@@ -50,12 +51,7 @@ class _HomePageState extends State<HomePage> {
   DateTime? currentBackPressTime;
   bool _increaseValue = false;
   int _selectedValue = 0;
-  bool _isBiosPasswordValid = false;
-  bool _isRootPasswordValid = false;
 
-  // int _parseToInt(String? value) {
-  //   return value != null ? int.parse(value) : 0;
-  // }
 
   @override
   void initState() {
@@ -136,12 +132,10 @@ class _HomePageState extends State<HomePage> {
         fetchItems(); // Обновите список после добавления элемента
         _formKey.currentState!.reset();
 
-        // Сбросить значения контроллеров текстовых полей на "0"
-        _maxVpnSessionsController.text = '0';
-        _maxBandwidthController.text = '0';
-        _maxUsersController.text = '0';
+        _maxVpnSessionsController.text = '';
+        _maxBandwidthController.text = '';
+        _maxUsersController.text = '';
         _expiryDateController.text = '';
-        // Сбросить значения контроллеров для "Владелец" и "Серийный номер"
         _nameController.text = '';
         _keyController.text = '';
         _qtyController.text = '1';
@@ -425,20 +419,25 @@ class _HomePageState extends State<HomePage> {
                           name: 'max_vpn_sessions',
                           controller: _maxVpnSessionsController,
                           decoration: const InputDecoration(
-                              labelText: 'Максимальное кол-во впн сессий'),
+                            labelText: 'Максимальное кол-во впн сессий',
+                          ),
+                          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                         ),
                         FormBuilderTextField(
                           name: 'max_bandwidth',
                           controller: _maxBandwidthController,
                           decoration: const InputDecoration(
-                              labelText: 'Максимальная пропускная способность'),
+                            labelText: 'Максимальная пропускная способность',
+                          ),
+                          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                         ),
                         FormBuilderTextField(
                           name: 'max_users',
                           controller: _maxUsersController,
                           decoration: const InputDecoration(
-                              labelText:
-                                  'Максимальное количество пользователей'),
+                            labelText: 'Максимальное количество пользователей',
+                          ),
+                          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
                         ),
                         FormBuilderTextField(
                           name: 'Пароль BIOS',
