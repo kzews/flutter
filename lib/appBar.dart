@@ -86,13 +86,14 @@ class AppDrawer extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Логин: ${userDto.login}'),
+
               Text('Роль: ${userDto.role}'),
             ],
           ),
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.pop(context);
+                 Navigator.pop(context);
                 _showEditDialog(context);
               },
               child: const Text('Изменить'),
@@ -103,19 +104,33 @@ class AppDrawer extends StatelessWidget {
     );
   }
 
-  void
-  _showEditDialog(BuildContext context) {
+  void _showEditDialog(BuildContext context) {
     String newLogin = '';
     String newPassword = '';
-    // String confirmPassword = '';
 
     showDialog(
       context: context,
       builder: (BuildContext context) {
+        final mediaQuery = MediaQuery.of(context);
+        final width = mediaQuery.size.width;
+        final height = mediaQuery.size.height;
+
+        EdgeInsets insetPadding;
+
+        // Устанавливаем отступы в зависимости от размера окна
+        if (width > 800 && height > 800) {
+          insetPadding = const EdgeInsets.all(200);
+        } else if (width > 600 && height > 600) {
+          insetPadding = const EdgeInsets.all(100);
+        } else {
+          insetPadding = const EdgeInsets.all(50);
+        }
+
         return AlertDialog(
-          insetPadding: const EdgeInsets.all(350),
+          insetPadding: insetPadding,
           title: const Text('Изменить данные'),
           content: Column(
+            mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 onChanged: (value) {
@@ -130,14 +145,6 @@ class AppDrawer extends StatelessWidget {
                 obscureText: true,
                 decoration: const InputDecoration(labelText: 'Новый пароль'),
               ),
-              //TODO: проверка правильного ввода нового пароля
-              // TextField(
-              //   onChanged: (value) {
-              //     confirmPassword = value;
-              //   },
-              //   obscureText: true,
-              //   decoration: InputDecoration(labelText: 'Подтвердите новый пароль'),
-              // ),
             ],
           ),
           actions: [

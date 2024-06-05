@@ -3,8 +3,10 @@ import 'dart:math';
 import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:intl/intl.dart';
 
 import '../../environment.dart';
+import '../../screens/add_license.dart';
 import 'fetchItemsPage.dart';
 
 
@@ -56,7 +58,21 @@ Future<void> changeItem(BuildContext context, int itemId, Map<String, dynamic> i
       final TextEditingController _passwordBiosController = TextEditingController(text: item['passwordBIOS'] != null ? item['passwordBIOS'] : '');
       final TextEditingController _passwordRootController = TextEditingController(text: item['passwordRoot'] != null ? item['passwordRoot'] : '');
       final GlobalKey<FormBuilderState> _formKey = GlobalKey<FormBuilderState>();
-
+      final TextEditingController _dateShippingController = TextEditingController();
+      Future<void> _selectShippingDate(BuildContext context) async {
+        final DateTime? picked = await Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => DatePickerWidget()),
+        );
+        if (picked != null && picked != DateTime.now()) {
+          setState(() {
+            _dateShippingController.text = DateFormat('dd.MM.yyyy').format(picked);
+            // expireDateForBase = _expiryDateController.text;
+            // dateSend ="${picked.year}/${picked.month}/${picked.day}";
+            // print(dateSend);
+          });
+        }
+      }
 
       return AlertDialog(
         title: const Text('Изменение элемента'),
@@ -73,9 +89,35 @@ Future<void> changeItem(BuildContext context, int itemId, Map<String, dynamic> i
                   controller: unnOrUnpController,
                   decoration: const InputDecoration(labelText: 'УНН/УНП'),
                 ),
-                TextField(
-                  controller: dateShippingController,
-                  decoration: const InputDecoration(labelText: 'Дата отгрузки'),
+                Row(
+                  children: [
+                    Expanded(
+                      child: FormBuilderTextField(
+                        onTap: () {
+                          _selectShippingDate(
+                              context); // Выбор даты отгрузки
+                        },
+                        name: 'date_shipping',
+                        controller: _dateShippingController,
+                        decoration: const InputDecoration(
+                          labelText: 'Дата отгрузки',
+                        ),
+                        readOnly: true,
+                      ),
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.clear),
+                      onPressed: () {
+                        _dateShippingController.clear();
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.calendar_today),
+                      onPressed: () {
+                        _selectShippingDate(context);
+                      },
+                    ),
+                  ],
                 ),
                 TextField(
                   controller: dogovorController,
@@ -91,7 +133,7 @@ Future<void> changeItem(BuildContext context, int itemId, Map<String, dynamic> i
                   decoration: InputDecoration(
                     labelText: 'Пароль BIOS',
                     suffixIcon: IconButton(
-                      icon: const Icon(Icons.cached_rounded),
+                      icon: Icon(Icons.lock),
                       onPressed: () {
                         setState(() {
                           _passwordBiosController.text = generatePassword();
@@ -100,12 +142,12 @@ Future<void> changeItem(BuildContext context, int itemId, Map<String, dynamic> i
                     ),
                   ),
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Пароль BIOS не может быть пустым';
-                    } else if (value.length < 6) {
-                      return 'Пароль BIOS должен содержать не менее 6 символов';
-                    } else if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d).+$').hasMatch(value)) {
-                      return 'Пароль BIOS должен содержать как минимум одну букву и одну цифру';
+                    if (value != null && value.isNotEmpty) {
+                      if (value.length < 6) {
+                        return 'Пароль BIOS должен содержать не менее 6 символов';
+                      } else if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d).+$').hasMatch(value)) {
+                        return 'Пароль BIOS должен содержать как минимум одну букву и одну цифру';
+                      }
                     }
                     return null;
                   },
@@ -116,7 +158,7 @@ Future<void> changeItem(BuildContext context, int itemId, Map<String, dynamic> i
                   decoration: InputDecoration(
                     labelText: 'Пароль ROOT',
                     suffixIcon: IconButton(
-                      icon: const Icon(Icons.cached_rounded),
+                      icon: Icon(Icons.lock),
                       onPressed: () {
                         setState(() {
                           _passwordRootController.text = generatePassword();
@@ -125,13 +167,12 @@ Future<void> changeItem(BuildContext context, int itemId, Map<String, dynamic> i
                     ),
                   ),
                   validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Пароль ROOT не может быть пустым';
-                    } else if (value.length < 6) {
-                      // print('Пароль ROOT должен содержать не менее 6 символов');
-                      return 'Пароль ROOT должен содержать не менее 6 символов';
-                    } else if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d).+$').hasMatch(value)) {
-                      return 'Пароль ROOT должен содержать как минимум одну букву и одну цифру';
+                    if (value != null && value.isNotEmpty) {
+                      if (value.length < 6) {
+                        return 'Пароль ROOT должен содержать не менее 6 символов';
+                      } else if (!RegExp(r'^(?=.*[A-Za-z])(?=.*\d).+$').hasMatch(value)) {
+                        return 'Пароль ROOT должен содержать как минимум одну букву и одну цифру';
+                      }
                     }
                     return null;
                   },

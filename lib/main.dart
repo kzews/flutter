@@ -4,9 +4,14 @@
 
 import 'package:flutter/material.dart';
 import 'package:fluttersrc/screens/login_page.dart';
+import 'package:intl/date_symbol_data_local.dart';
 
-void main() {
-  runApp(const MyApp());
+import 'environment.dart';
+
+void main() async{
+  WidgetsFlutterBinding.ensureInitialized();
+  API_URL = await loadApiUrl();
+  initializeDateFormatting().then((_) => runApp(MyApp()));
 }
 
 class MyApp extends StatelessWidget {

@@ -105,8 +105,6 @@ class _TablePageState extends State<TablePage> {
   Future<void> _filterItems(int pageSize, int pageNumber) async {
     final nameFilter = nameFilterController.text.toLowerCase();
     final licenseTypeFilter = licenseTypeFilterController.text.toLowerCase();
-    final licenseNumberFilter =
-        licenseNumberFilterController.text.toLowerCase();
     final licenseKeyFilter = licenseKeyFilterController.text.toLowerCase();
 
     final url = Uri.parse('$API_URL/api/filterItems');
@@ -114,25 +112,24 @@ class _TablePageState extends State<TablePage> {
       url,
       body: jsonEncode({
         'name': nameFilter,
-        'license_type': licenseTypeFilter,
+        'license_type': licenseTypeFilter.split(',').map((e) => e.trim()).toList(), // Преобразуем в список
         'license_key': licenseKeyFilter,
-        'pageSize': pageSize, // Добавляем размер страницы в параметры запроса
+        'pageSize': pageSize,
         'pageNumber': pageNumber,
       }),
       headers: {'Content-Type': 'application/json'},
     );
 
+
     if (response.statusCode == 200) {
       final List<dynamic> responseData = json.decode(response.body);
-      final List<Map<String, dynamic>> itemsList =
-          List<Map<String, dynamic>>.from(responseData);
+      final List<Map<String, dynamic>> itemsList = List<Map<String, dynamic>>.from(responseData);
 
       setState(() {
         items = itemsList;
       });
     } else {
       // Обработка ошибки, если запрос не удался
-      // Например, отображение сообщения об ошибке пользователю
       print('Request failed with status: ${response.statusCode}');
     }
 
@@ -148,12 +145,13 @@ class _TablePageState extends State<TablePage> {
         final licenseNumber = item['license_number'].toString().toLowerCase();
         final licenseKey = item['license_key'].toString().toLowerCase();
         return name.contains(nameFilter) &&
-            licenseType.contains(licenseTypeFilter) &&
-            licenseNumber.contains(licenseNumberFilter) &&
+            licenseTypeFilter.contains(licenseType) &&
+            licenseNumber.contains(licenseNumberFilterController.text.toLowerCase()) &&
             licenseKey.contains(licenseKeyFilter);
       }).toList();
     });
   }
+
 
   bool _selectAll = false;
 
@@ -209,7 +207,7 @@ class _TablePageState extends State<TablePage> {
       ),
 
       DataColumn(
-        label: _buildColumnLabel('Дата отгрузки', Icons.password),
+        label: _buildColumnLabel('Дата\nотгрузки', Icons.password),
         tooltip: 'Дата отгрузки',
         onSort: (columnIndex, ascending) {
           setState(() {
@@ -377,47 +375,54 @@ class _TablePageState extends State<TablePage> {
   void updateLicenseType() {
     switch (dropdownValue) {
       case 'Любой':
-        licenseTypeFilterController.text = '';
+        if (isCheckedServer && isCheckedConfirmationCode) {
+          licenseTypeFilterController.text = '104, 105, 106';
+        } else if (isCheckedServer) {
+          licenseTypeFilterController.text = '101, 102, 103';
+        } else if (isCheckedConfirmationCode) {
+          licenseTypeFilterController.text = '4, 5, 6';
+        } else {
+          licenseTypeFilterController.text = '';
+        }
         break;
       case 'Сервер':
         if (isCheckedServer && isCheckedConfirmationCode) {
-          licenseTypeFilterController.text =
-              '104'; // сервер без случайности с КП
+          licenseTypeFilterController.text = '104';
         } else if (isCheckedServer) {
-          licenseTypeFilterController.text = '101'; // сервер без случайности
+          licenseTypeFilterController.text = '101';
         } else if (isCheckedConfirmationCode) {
-          licenseTypeFilterController.text = '4'; // сервер с КП
+          licenseTypeFilterController.text = '4';
         } else {
-          licenseTypeFilterController.text = '1'; // сервер
+          licenseTypeFilterController.text = '1';
         }
         break;
       case 'Мост':
         if (isCheckedServer && isCheckedConfirmationCode) {
-          licenseTypeFilterController.text = '105'; // мост без случайности с КП
+          licenseTypeFilterController.text = '105';
         } else if (isCheckedServer) {
-          licenseTypeFilterController.text = '102'; // мост без случайности
+          licenseTypeFilterController.text = '102';
         } else if (isCheckedConfirmationCode) {
-          licenseTypeFilterController.text = '5'; // мост с КП
+          licenseTypeFilterController.text = '5';
         } else {
-          licenseTypeFilterController.text = '2'; // мост
+          licenseTypeFilterController.text = '2';
         }
         break;
       case 'Клиент':
         if (isCheckedServer && isCheckedConfirmationCode) {
-          licenseTypeFilterController.text =
-              '106'; // клиент без случайности с КП
+          licenseTypeFilterController.text = '106';
         } else if (isCheckedServer) {
-          licenseTypeFilterController.text = '103'; // клиент без случайности
+          licenseTypeFilterController.text = '103';
         } else if (isCheckedConfirmationCode) {
-          licenseTypeFilterController.text = '6'; // клиент с КП
+          licenseTypeFilterController.text = '6';
         } else {
-          licenseTypeFilterController.text = '3'; // клиент
+          licenseTypeFilterController.text = '3';
         }
         break;
       default:
         licenseTypeFilterController.text = '';
     }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -707,10 +712,8 @@ class _TablePageState extends State<TablePage> {
                                       DataCell(
                                         Center(
                                           child: Text(
-                                            item['expiry_date']
-                                                    .toString()
-                                                    .isEmpty
-                                                ? 'бессрочно'
+                                            item['expiry_date'] == 0
+                                                ? 'бессрочная'
                                                 : item['expiry_date']
                                                     .toString(),
                                           ),
@@ -897,12 +900,10 @@ class _TablePageState extends State<TablePage> {
                                       DataCell(
                                         Center(
                                           child: Text(
-                                            item['expiry_date']
-                                                    .toString()
-                                                    .isEmpty
-                                                ? 'бессрочно'
+                                            item['expiry_date'] == 0
+                                                ? 'бессрочная'
                                                 : item['expiry_date']
-                                                    .toString(),
+                                                .toString(),
                                           ),
                                         ),
                                       ),
@@ -999,18 +1000,18 @@ class _TablePageState extends State<TablePage> {
                                           Center(
                                             child: Checkbox(
                                               value:
-                                              checkBoxStates[item['id']] ??
-                                                  false,
+                                                  checkBoxStates[item['id']] ??
+                                                      false,
                                               onChanged: (value) {
                                                 setState(() {
                                                   checkBoxStates[item['id']] =
                                                       value ?? false;
                                                   if (value ?? false) {
                                                     selectedIds.add(item[
-                                                    'id']); // Add id to selectedIds when checkbox is checked
+                                                        'id']); // Add id to selectedIds when checkbox is checked
                                                   } else {
                                                     selectedIds.remove(item[
-                                                    'id']); // Remove id from selectedIds when checkbox is unchecked
+                                                        'id']); // Remove id from selectedIds when checkbox is unchecked
                                                   }
                                                 });
                                               },

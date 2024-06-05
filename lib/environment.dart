@@ -1,4 +1,29 @@
-var API_URL = 'http://192.168.51.17:5000';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+
+Future<String> loadApiUrl() async {
+  try {
+    var currentDir = Directory.current;
+    final file = File('${currentDir.path}/api_url.txt');
+
+    if (await file.exists()) {
+      final _apiUrl = await file.readAsString();
+      API_URL = _apiUrl;
+      return _apiUrl.trim();
+    } else {
+      const defaultUrl = 'http://192.168.51.17:5000';
+      await file.writeAsString(defaultUrl);
+      API_URL = defaultUrl;
+      return defaultUrl;
+    }
+  } catch (e) {
+    return 'http://default.api.url';
+  }
+}
+
+String? API_URL;
+
+
 const AUTH_API_URL = 'http://178.124.209.20/thyroid-auth';
 const USE_FAKE_THYROID_API = false;
 const USE_FAKE_AUTH_API = false;

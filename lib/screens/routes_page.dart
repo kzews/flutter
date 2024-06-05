@@ -44,7 +44,6 @@ class _Home1PageState extends State<Home1Page> {
     bool isUserOrAdmin = widget.userDto.role == "user" || isAdmin;
 
     return WillPopScope(
-      
       onWillPop: () async {
         return backButton(context);
       },
@@ -60,15 +59,19 @@ class _Home1PageState extends State<Home1Page> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      isAdmin ? HoverButton(context, Colors.red, Icons.groups_outlined,
-                          () {
-                        _navigateToPage(context, Colors.red);
-                      }): Container(),
+                      isAdmin
+                          ? HoverButton(
+                              context, Colors.red, Icons.groups_outlined, () {
+                              _navigateToPage(context, Colors.red);
+                            })
+                          : Container(),
                       SizedBox(width: screenWidth * 0.07),
-                      isUserOrAdmin ? HoverButton(context, Colors.lightGreen, Icons.add_card,
-                          () {
-                        _navigateToPage(context, Colors.lightGreen);
-                      }): Container(),
+                      isAdmin
+                          ? HoverButton(context, Colors.yellow,
+                              Icons.person_add_alt_rounded, () {
+                              _navigateToPage(context, Colors.yellow);
+                            })
+                          : Container(),
                     ],
                   ),
                   SizedBox(height: screenWidth * 0.07),
@@ -80,12 +83,12 @@ class _Home1PageState extends State<Home1Page> {
                         _navigateToPage(context, Colors.blue);
                       }),
                       SizedBox(width: screenWidth * 0.07),
-                      isAdmin ? HoverButton(
-                          context, Colors.yellow, Icons.person_add_alt_rounded,
-
-                          () {
-                        _navigateToPage(context, Colors.yellow);
-                      }): Container(),
+                      isUserOrAdmin
+                          ? HoverButton(
+                              context, Colors.lightGreen, Icons.add_card, () {
+                              _navigateToPage(context, Colors.lightGreen);
+                            })
+                          : Container(),
                     ],
                   ),
                 ],

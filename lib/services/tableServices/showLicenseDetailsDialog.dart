@@ -31,10 +31,11 @@ Future<void> showLicenseDetailsDialog(
     builder: (BuildContext context) {
       bool isActivationButtonVisible = !(item['license_type'] == 1 ||
           item['license_type'] == 2 ||
-          item['license_type'] == 3 ||
+          item['license_type'] == 3 || item['license_type'] == 101 || item['license_type'] == 102 || item['license_type'] == 103 ||
           userDto.role == 'guest');
       return AlertDialog(
         scrollable: true,
+
         title: const Text('Данные лицензии'),
         content: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -63,7 +64,7 @@ Future<void> showLicenseDetailsDialog(
               },
             ),
             Text(
-                'Срок: ${item['expiry_date'].toString().isEmpty ? 'бессрочно' : item['expiry_date']}'),
+                'Срок: ${item['expiry_date']== 0 ? 'бессрочная' : item['expiry_date']}'),
             Text(
                 'Пропускная способность: ${item['max_bandwidth'] == '0' ? 'без ограничений' : item['max_bandwidth']}'),
             Text(
@@ -85,6 +86,9 @@ Future<void> showLicenseDetailsDialog(
               ),
               Text(
                 'Примечание: ${item['remark'] ?? ''}',
+              ),
+              Text(
+                'Код активации: ${item['generate_key'] ?? ''}',
               ),
             ],
           ],

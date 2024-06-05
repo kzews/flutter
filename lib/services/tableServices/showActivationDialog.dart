@@ -16,7 +16,8 @@ Future<void> showActivationDialog(
       return AlertDialog(
         scrollable: true,
         title: const Text('Введите код активации'),
-        content: Column(
+        content: SingleChildScrollView(
+      child:  Column(
           children: [
             TextField(
               onChanged: (value) {
@@ -27,6 +28,7 @@ Future<void> showActivationDialog(
               ),
             ),
           ],
+        ),
         ),
         actions: [
           TextButton(
@@ -71,7 +73,8 @@ Future<void> activateLicense(BuildContext context, int licenseType,
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          insetPadding: const EdgeInsets.all(400),
+
+          insetPadding: const EdgeInsets.all(20),
           title: const Text('Успешно активировано'),
           content: Text('Код подтверждения: ${responseData['install_code']}'),
           actions: [

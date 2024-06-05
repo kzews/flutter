@@ -23,6 +23,7 @@ Future<void> fetchItemsPage(
       List<Map<String, dynamic>>.from(responseData['items']);
       totalPages = responseData['total_pages']; // Обновляем значение totalPages
 
+
       callback(itemsList);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
